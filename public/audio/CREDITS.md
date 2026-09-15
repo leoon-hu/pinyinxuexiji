@@ -25,7 +25,7 @@
 
 ## C. 引导语（p-*.mp3）与例字词语（w-*.mp3）
 
-- 内容：引导语 44 条；例字词语 1887 条（高级测验答对后朗读，文本见 src/data/words.ts）。
+- 内容：引导语 43 条；例字词语 1887 条（高级测验答对后朗读，文本见 src/data/words.ts）。
 - 来源：Microsoft Edge 神经语音合成（edge-tts，音色 zh-CN-XiaoyiNeural，语速 -10%）。
 - 许可：合成语音，使用需遵守 Microsoft 相关服务条款。
 

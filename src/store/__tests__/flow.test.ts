@@ -26,7 +26,7 @@ vi.mock('@/services/audio', () => ({
 
 import { state, resetSelection, resetFeedback } from '../state'
 import { progress, advancedToday, advancedStats, clearAdvancedLog, recordAdvanced } from '../progress'
-import { setMode, pressInitial, pressFinal, pressTone, replay, confirm, toggleEcho, interrupt, restartAdvanced } from '../session'
+import { setMode, pressInitial, pressFinal, pressTone, replay, confirm, toggleEcho, toggleWholes, interrupt, restartAdvanced } from '../session'
 import { cancel } from '../runner'
 import { toKey } from '@/data/pinyin'
 import { exampleChar } from '@/data/syllables'
@@ -51,6 +51,7 @@ beforeEach(() => {
   progress.settings.unit = 14
   progress.settings.basicLevel = 1
   progress.settings.quizSize = 5
+  progress.settings.echoGap = 1500
   state.quiz = null
   state.mode = 'read'
 })
@@ -184,6 +185,86 @@ describe('跟读', () => {
     await wait(5)
     expect(state.echo).toBeNull()
     expect(state.playing).toBe('initial:m')
+    interrupt()
+  })
+
+  it('一组连着播，不按行停', async () => {
+    progress.settings.echoGap = 20
+    setMode('read')
+    await wait(50)
+    toggleEcho('initials')
+    await wait(600)
+    expect(state.echo?.kind).toBe('initials')
+    expect(state.echo?.active).toBe(true)
+    expect(state.echo?.total).toBe(23)
+    expect(state.echo?.index).toBeGreaterThanOrEqual(6)
+    interrupt()
+  })
+
+  it('示范播到一半暂停，继续时重播这一个', async () => {
+    progress.settings.echoGap = 300
+    setMode('read')
+    await wait(50)
+    toggleEcho('initials')
+    await wait(10)
+    toggleEcho('initials')
+    expect(state.echo).toEqual({ kind: 'initials', index: 0, total: 23, active: false })
+    expect(state.playing).toBeNull()
+    expect(state.screen.icon).toBe('⏸')
+    expect(state.screen.waiting).toBe(false)
+    await wait(100)
+    expect(state.echo?.index).toBe(0)
+    toggleEcho('initials')
+    await wait(10)
+    expect(state.echo?.active).toBe(true)
+    expect(state.playing).toBe('initial:b')
+    interrupt()
+  })
+
+  it('等孩子读的时候暂停，继续时直接到下一个', async () => {
+    progress.settings.echoGap = 300
+    setMode('read')
+    await wait(50)
+    toggleEcho('initials')
+    await wait(120)
+    expect(state.screen.waiting).toBe(true)
+    toggleEcho('initials')
+    expect(state.echo).toEqual({ kind: 'initials', index: 1, total: 23, active: false })
+    toggleEcho('initials')
+    await wait(10)
+    expect(state.playing).toBe('initial:p')
+    interrupt()
+  })
+
+  it('整体认读音节也能跟读，收起键盘就停', async () => {
+    progress.settings.echoGap = 300
+    setMode('read')
+    await wait(50)
+    toggleWholes()
+    toggleEcho('wholesTones')
+    await wait(10)
+    expect(state.echo).toMatchObject({ kind: 'wholesTones', index: 0, total: 64, active: true })
+    expect(state.playing).toBe('whole:zhi')
+    expect(state.playingTone).toBe(1)
+    expect(state.screen.big).toBe('zhī')
+    expect(state.screen.char).toBe('之')
+    toggleWholes()
+    expect(state.showWholes).toBe(false)
+    expect(state.echo).toBeNull()
+    expect(state.playing).toBeNull()
+    interrupt()
+  })
+
+  it('暂停中按键或切模式，进度不保留', async () => {
+    progress.settings.echoGap = 300
+    setMode('read')
+    await wait(50)
+    toggleEcho('finals')
+    await wait(10)
+    toggleEcho('finals')
+    expect(state.echo?.active).toBe(false)
+    pressInitial('m')
+    expect(state.echo).toBeNull()
     interrupt()
   })
 })

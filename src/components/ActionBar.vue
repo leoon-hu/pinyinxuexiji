@@ -96,18 +96,25 @@ import { state, replay, clear, confirm, canReplay, canClear, canConfirm, confirm
   }
 }
 
+@media (min-width: 700px) and (min-height: 900px) and (orientation: portrait) {
+  .act {
+    height: 72px;
+    font-size: 30px;
+  }
+}
+
 @media (max-width: 560px) {
   .bar {
     position: sticky;
     bottom: 0;
     gap: 10px;
-    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+    padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
     background: linear-gradient(to top, var(--c-panel) 70%, rgba(255, 248, 237, 0));
     z-index: 2;
   }
 
   .act {
-    height: 52px;
+    height: 46px;
     font-size: 20px;
     gap: 4px;
   }

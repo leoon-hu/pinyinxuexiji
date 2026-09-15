@@ -116,6 +116,74 @@ function holdEnd(): void {
   animation: hold-grow var(--hold, 1200ms) linear forwards;
 }
 
+/* 平板竖屏：放大 */
+@media (min-width: 700px) and (min-height: 900px) and (orientation: portrait) {
+  .top {
+    height: 64px;
+  }
+
+  .coins {
+    height: 46px;
+    font-size: 24px;
+  }
+
+  .gift,
+  .gear {
+    width: 52px;
+    height: 52px;
+  }
+
+  .gift {
+    font-size: 32px;
+  }
+
+  .gear svg {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+/* 手机：竖排在显示屏左边（App.vue 把它塞进 ScreenPanel 的插槽） */
+@media (max-width: 560px) {
+  .top {
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    min-height: 120px;
+    width: 64px;
+    gap: 4px;
+    padding: 0;
+  }
+
+  .coins {
+    height: 32px;
+    padding: 0 8px 0 6px;
+    font-size: 16px;
+    background: var(--c-key);
+    box-shadow: var(--shadow-chip);
+  }
+
+  .gift,
+  .gear {
+    width: 36px;
+    height: 36px;
+  }
+
+  .gift {
+    font-size: 24px;
+  }
+
+  .spacer {
+    display: none;
+  }
+
+  /* 在奶油色面板上，白色齿轮看不见 */
+  .gear {
+    color: var(--c-gray);
+  }
+}
+
 @keyframes hold-grow {
   from {
     transform: scale(0.3);

@@ -7,7 +7,7 @@ import type { Sound } from '@/data/sounds'
 import type { Quiz } from './quiz'
 
 export type Mode = 'read' | 'spell' | 'basic' | 'advanced'
-export type Sequence = 'initials' | 'finals' | 'finalsTones'
+export type Sequence = 'initials' | 'finals' | 'finalsTones' | 'wholes' | 'wholesTones'
 export type KeyKind = 'initial' | 'final' | 'whole' | 'tone'
 
 export const MODE_LABEL: Record<Mode, string> = {
@@ -103,8 +103,8 @@ export const state = reactive({
   playing: null as string | null,
   playingTone: null as Tone | null,
   quiz: null as Quiz | null,
-  /** 跟读进度 */
-  echo: null as null | { kind: Sequence; row: number; rows: number; active: boolean },
+  /** 跟读进度：index = 正在播（或暂停后要继续）的那个，active = false 表示暂停中 */
+  echo: null as null | { kind: Sequence; index: number; total: number; active: boolean },
   /** 本题允许点的键；null = 全部 */
   enabledKeys: null as string[] | null,
   /** 本题点错的键 */

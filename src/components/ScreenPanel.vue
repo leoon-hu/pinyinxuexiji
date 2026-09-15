@@ -37,6 +37,7 @@ const pieceTone = (p: Piece): Tone | null => (p.kind === 'tone' && p.text ? (Num
 
 <template>
   <div class="wrap">
+    <div class="side"><slot /></div>
     <div class="screen" :class="[screen.status && `is-${screen.status}`]">
       <button v-if="stats" class="stats" title="今天的高级测验记录" @click="emit('open', 'log')">
         <span class="s-item">已测 <b>{{ stats.total }}</b></span>
@@ -110,6 +111,11 @@ const pieceTone = (p: Piece): Tone | null => (p.kind === 'tone' && p.text ? (Num
   grid-template-columns: 1fr 160px;
   gap: 20px;
   padding: 4px 20px;
+}
+
+/* 手机上放顶栏三个图标的侧栏，其它布局不显示 */
+.side {
+  display: none;
 }
 
 .screen {
@@ -467,9 +473,84 @@ const pieceTone = (p: Piece): Tone | null => (p.kind === 'tone' && p.text ? (Num
 
 @media (max-width: 560px) {
   .wrap {
-    grid-template-columns: 1fr;
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      'side screen'
+      'modes modes';
     padding: 0;
-    gap: 10px;
+    gap: 8px;
+  }
+
+  .side {
+    display: block;
+    grid-area: side;
+  }
+
+  .screen {
+    grid-area: screen;
+  }
+
+  .modes {
+    grid-area: modes;
+  }
+
+  /* 显示屏收紧：空屏 120px；高级测验听题（统计条 + 进度点 + 部件 + 例字）也基本装得下 */
+  .screen {
+    min-height: var(--screen-h, 120px);
+    padding: 6px 12px 8px;
+    gap: 3px;
+  }
+
+  .stats {
+    height: 20px;
+    margin: 0;
+  }
+
+  .dots {
+    margin-bottom: 0;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+  }
+
+  .pieces {
+    font-size: 20px;
+  }
+
+  .piece {
+    min-width: 40px;
+    height: 28px;
+    padding: 0 8px;
+  }
+
+  .main {
+    min-height: 48px;
+    gap: 12px;
+  }
+
+  .icon {
+    font-size: 34px;
+    width: 48px;
+    height: 48px;
+  }
+
+  .char {
+    font-size: 26px;
+  }
+
+  .char.solo {
+    font-size: 36px;
+  }
+
+  .note {
+    font-size: 12px;
+  }
+
+  .action {
+    height: 36px;
+    font-size: 16px;
   }
 
   .modes {
@@ -478,8 +559,9 @@ const pieceTone = (p: Piece): Tone | null => (p.kind === 'tone' && p.text ? (Num
 
   .mode {
     flex: 1;
-    font-size: 14px;
+    font-size: clamp(12px, 3.6vw, 14px);
     gap: 3px;
+    white-space: nowrap;
   }
 
   .big {
@@ -492,13 +574,90 @@ const pieceTone = (p: Piece): Tone | null => (p.kind === 'tone' && p.text ? (Num
   }
 
   .word {
-    font-size: 17px;
+    font-size: 15px;
     padding: 1px 10px;
   }
 }
 
+/* 平板竖屏（iPad 等）：显示屏、字、模式键都放大 */
+@media (min-width: 700px) and (min-height: 900px) and (orientation: portrait) {
+  .wrap {
+    grid-template-columns: 1fr 200px;
+  }
+
+  .screen {
+    min-height: var(--screen-h, 198px);
+  }
+
+  .modes {
+    gap: 10px;
+  }
+
+  .mode {
+    height: 42px;
+    font-size: 19px;
+  }
+
+  .m-icon {
+    font-size: 18px;
+  }
+
+  .stats {
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .s-item b {
+    font-size: 15px;
+  }
+
+  .pieces {
+    font-size: 26px;
+  }
+
+  .piece {
+    min-width: 56px;
+    height: 40px;
+  }
+
+  .main {
+    min-height: 64px;
+  }
+
+  .icon {
+    width: 64px;
+    height: 64px;
+    font-size: 46px;
+  }
+
+  .big {
+    font-size: clamp(50px, 5vh, 68px);
+  }
+
+  .char {
+    font-size: clamp(30px, 3vh, 40px);
+  }
+
+  .char.solo {
+    font-size: clamp(44px, 4.5vh, 60px);
+  }
+
+  .word {
+    font-size: 22px;
+  }
+
+  .note {
+    font-size: 15px;
+  }
+
+  .action {
+    height: 44px;
+    font-size: 19px;
+  }
+}
+
 /* iPad 横屏等矮宽视口：显示屏在左栏，模式键横排在屏幕下面 */
-@media (min-width: 900px) and (max-height: 1000px) {
+@media (min-width: 900px) and (max-height: 1040px) and (orientation: landscape) {
   .wrap {
     grid-template-columns: 1fr;
     padding: 0;
@@ -506,7 +665,7 @@ const pieceTone = (p: Piece): Tone | null => (p.kind === 'tone' && p.text ? (Num
   }
 
   .screen {
-    min-height: 170px;
+    min-height: clamp(170px, 22vh, 260px);
   }
 
   .modes {

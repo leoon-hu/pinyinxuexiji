@@ -20,12 +20,18 @@ import {
   pressInitial, pressFinal, pressWhole, pressTone,
   toggleEcho, toggleWholes, confirmDialogAnswer, interrupt, resumeQuiz,
 } from '@/store/session'
+import type { Sequence } from '@/store/state'
 import { progress } from '@/store/progress'
 import { initAudio, unlockAudio, preload, configureAudio } from '@/services/audio'
 import { configureSfx } from '@/services/sfx'
 
 type Panel = 'gift' | 'lock' | 'parent' | 'chart' | 'log' | null
 const panel = ref<Panel>(null)
+
+/** 手机竖屏：金币 / 礼物 / 齿轮不单独占一行，竖排在显示屏左边，省下一行高度给键盘 */
+const phoneQuery = matchMedia('(max-width: 560px)')
+const phone = ref(phoneQuery.matches)
+phoneQuery.addEventListener('change', (e) => (phone.value = e.matches))
 
 function openPanel(p: 'gift' | 'parent' | 'log'): void {
   // 弹窗盖住键盘，底下的序列（演示 / 跟读 / 测验过渡）先停
@@ -39,13 +45,15 @@ function closePanel(): void {
   resumeQuiz()
 }
 
-/** 跟读按钮的文字：播放中 → 停止；一行完 → 继续 n/4 */
-function echoLabel(kind: 'initials' | 'finals' | 'finalsTones'): string {
+/** 跟读按钮：播放中 → 暂停 n/N；暂停中 → 继续 n/N（n/N 是给家长看的，窄屏上不显示） */
+function echoLabel(kind: Sequence): { text: string; prog: string } {
   const e = state.echo
-  if (!e || e.kind !== kind) return '跟读'
-  if (e.active) return `停止 ${e.row + 1}/${e.rows}`
-  return `继续 ${e.row + 1}/${e.rows}`
+  if (!e || e.kind !== kind) return { text: '跟读', prog: '' }
+  return { text: e.active ? '暂停' : '继续', prog: `${Math.min(e.index + 1, e.total)}/${e.total}` }
 }
+
+/** 声母行的跟读按钮：显示整体认读音节键盘时跟读的是整体认读音节 */
+const initialsEcho = computed<Sequence>(() => (showWholes.value ? 'wholes' : 'initials'))
 
 /** 拼读态里，已有声母、当前选的 i/u/ü 还能当介母时，给可接的韵母标「介」 */
 const medialBadge = computed(() => {
@@ -55,10 +63,10 @@ const medialBadge = computed(() => {
   return MEDIAL_FINALS[f]
 })
 
+const showWholes = computed(() => state.showWholes && !inQuiz.value)
+
 /** 韵母键盘四行按教材分组着色 */
 const FINAL_TINTS = ['var(--tint-1)', 'var(--tint-2)', 'var(--tint-3)', 'var(--tint-4)']
-
-const showWholes = computed(() => state.showWholes && !inQuiz.value)
 
 // 家长设置 → 播放引擎
 watch(
@@ -95,10 +103,12 @@ onMounted(async () => {
 
 <template>
   <div class="app">
-    <TopBar @open="openPanel" />
+    <TopBar v-if="!phone" @open="openPanel" />
 
     <section class="panel screen-panel">
-      <ScreenPanel @open="openPanel" />
+      <ScreenPanel @open="openPanel">
+        <TopBar v-if="phone" @open="openPanel" />
+      </ScreenPanel>
     </section>
 
     <section class="panel keys">
@@ -106,11 +116,19 @@ onMounted(async () => {
         <span class="chip tag tag-initial">声母</span>
         <button
           class="chip"
-          :class="{ active: state.echo?.kind === 'initials' }"
-          :disabled="inQuiz || showWholes"
-          @click="toggleEcho('initials')"
+          :class="{ active: state.echo?.kind === initialsEcho }"
+          :disabled="inQuiz"
+          @click="toggleEcho(initialsEcho)"
         >
-          {{ echoLabel('initials') }}
+          {{ echoLabel(initialsEcho).text }}<span v-if="echoLabel(initialsEcho).prog" class="prog">{{ echoLabel(initialsEcho).prog }}</span>
+        </button>
+        <button
+          v-if="showWholes"
+          class="chip"
+          :class="{ active: state.echo?.kind === 'wholesTones' }"
+          @click="toggleEcho('wholesTones')"
+        >
+          {{ echoLabel('wholesTones').text }}<span v-if="echoLabel('wholesTones').prog" class="prog">{{ echoLabel('wholesTones').prog }}</span><span class="marks"><ToneMark :tone="3" :size="14" /><ToneMark :tone="4" :size="14" /></span>
         </button>
         <button class="chip whole" :class="{ active: showWholes }" :disabled="inQuiz" @click="toggleWholes">
           整体认读音节
@@ -148,7 +166,7 @@ onMounted(async () => {
           :disabled="inQuiz"
           @click="toggleEcho('finals')"
         >
-          {{ echoLabel('finals') }}
+          {{ echoLabel('finals').text }}<span v-if="echoLabel('finals').prog" class="prog">{{ echoLabel('finals').prog }}</span>
         </button>
         <button
           class="chip"
@@ -156,7 +174,7 @@ onMounted(async () => {
           :disabled="inQuiz"
           @click="toggleEcho('finalsTones')"
         >
-          {{ echoLabel('finalsTones') }}<span class="marks"><ToneMark :tone="3" :size="14" /><ToneMark :tone="4" :size="14" /></span>
+          {{ echoLabel('finalsTones').text }}<span v-if="echoLabel('finalsTones').prog" class="prog">{{ echoLabel('finalsTones').prog }}</span><span class="marks"><ToneMark :tone="3" :size="14" /><ToneMark :tone="4" :size="14" /></span>
         </button>
       </div>
 
@@ -232,6 +250,19 @@ onMounted(async () => {
   margin-left: 2px;
 }
 
+/* 跟读进度 n/N：给家长看的，窄屏上放不下就不显示 */
+.prog {
+  margin-left: 4px;
+  font-size: 0.8em;
+  opacity: 0.85;
+}
+
+@media (max-width: 420px) {
+  .prog {
+    display: none;
+  }
+}
+
 .chip.active .marks {
   color: #fff;
 }
@@ -253,17 +284,33 @@ onMounted(async () => {
   margin-top: 24px;
 }
 
-@media (max-width: 480px) {
-  .finals-head,
+@media (max-width: 560px) {
+  .app {
+    padding: calc(6px + env(safe-area-inset-top, 0px)) 6px 0;
+    gap: 8px;
+  }
+
+  .finals-head {
+    margin-top: 4px;
+  }
+
   .actions {
-    margin-top: 14px;
+    margin-top: 0;
+  }
+}
+
+/* 平板竖屏：整体放宽 */
+@media (min-width: 700px) and (min-height: 900px) and (orientation: portrait) {
+  .app {
+    max-width: 960px;
+    padding: 0 12px 12px;
   }
 }
 
 /* iPad 横屏等矮宽视口：左栏顶栏 + 显示屏，右栏键盘，一屏放下 */
-@media (min-width: 900px) and (max-height: 1000px) {
+@media (min-width: 900px) and (max-height: 1040px) and (orientation: landscape) {
   .app {
-    max-width: 1120px;
+    max-width: 1320px;
     display: grid;
     grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
     grid-template-rows: max-content 1fr;

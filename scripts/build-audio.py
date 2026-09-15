@@ -138,7 +138,6 @@ PROMPTS: Dict[str, str] = {
     "p-parent": "请爸爸妈妈来确认。",
     "p-locked": "这里是给爸爸妈妈用的哦。",
     "p-press-next": "按绿色的确定键，下一题。",
-    "p-echo-next": "再点一下跟读，听下一行。",
     "p-gift-done": "换好了！去找爸爸妈妈领礼物吧。",
     "p-not-enough": "金币还不够，再去做题赚一些吧。",
     "p-pick-unit": "请爸爸妈妈先选一下，学到第几课了。",

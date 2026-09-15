@@ -1,9 +1,10 @@
 /**
- * 跟读：按行播放（一行 6 个），每个示范后留出「该你读了」的时间，一行结束自动停，再点一次继续下一行。
+ * 跟读：一组（声母 / 韵母 / 韵母四声 / 整体认读音节 / 整体认读音节四声）从头到尾连着播，每个示范后留出「该你读了」的时间。
+ * 播放中再点一次「跟读」= 暂停，再点 = 从暂停的地方继续。
  */
-import { INITIALS, FINALS, TONES, applyTone, FINAL_STANDALONE, type Tone } from '@/data/pinyin'
+import { INITIALS, FINALS, WHOLES, TONES, applyTone, FINAL_STANDALONE, type Tone } from '@/data/pinyin'
 import { exampleChar } from '@/data/syllables'
-import { initialSound, finalSound, type Sound } from '@/data/sounds'
+import { initialSound, finalSound, wholeSound, type Sound } from '@/data/sounds'
 import { sfxCue } from '@/services/sfx'
 import { progress } from './progress'
 import { run, cancel, sleep } from './runner'
@@ -18,40 +19,36 @@ interface Item {
   sound: Sound
 }
 
-const COLS = 6
 /** 「该你读了」每次会话只在第一次跟读时讲一遍，之后只用提示音 */
 let toldEchoYou = false
 
-function chunk<T>(list: readonly T[], size: number): T[][] {
-  const out: T[][] = []
-  for (let i = 0; i < list.length; i += size) out.push(list.slice(i, i + size))
-  return out
-}
-
-function rowsOf(kind: Sequence): Item[][] {
+function itemsOf(kind: Sequence): Item[] {
   if (kind === 'initials') {
-    return chunk(INITIALS, COLS).map((row) =>
-      row.map((i) => ({ id: keyId('initial', i), tone: null, big: i, char: '', sound: initialSound(i) })),
-    )
+    return INITIALS.map((i) => ({ id: keyId('initial', i), tone: null, big: i, char: '', sound: initialSound(i) }))
   }
   if (kind === 'finals') {
-    return chunk(FINALS, COLS).map((row) =>
-      row.map((f) => ({ id: keyId('final', f), tone: null, big: f, char: '', sound: finalSound(f) })),
+    return FINALS.map((f) => ({ id: keyId('final', f), tone: null, big: f, char: '', sound: finalSound(f) }))
+  }
+  if (kind === 'wholes') {
+    return WHOLES.map((w) => ({ id: keyId('whole', w), tone: null, big: w, char: '', sound: wholeSound(w) }))
+  }
+  if (kind === 'wholesTones') {
+    return WHOLES.flatMap((w) =>
+      TONES.map((t) => ({ id: keyId('whole', w), tone: t, big: applyTone(w, t), char: exampleChar(w, t), sound: wholeSound(w, t) })),
     )
   }
-  return chunk(FINALS, COLS).map((row) =>
-    row.flatMap((f) =>
-      TONES.map((t) => ({
-        id: keyId('final', f),
-        tone: t,
-        big: applyTone(f, t),
-        char: exampleChar(FINAL_STANDALONE[f], t),
-        sound: finalSound(f, t),
-      })),
-    ),
+  return FINALS.flatMap((f) =>
+    TONES.map((t) => ({
+      id: keyId('final', f),
+      tone: t,
+      big: applyTone(f, t),
+      char: exampleChar(FINAL_STANDALONE[f], t),
+      sound: finalSound(f, t),
+    })),
   )
 }
 
+/** 彻底停止（切模式、按键、重听……都走这里），进度不保留 */
 export function stopEcho(): void {
   if (!state.echo) return
   state.echo = null
@@ -60,42 +57,51 @@ export function stopEcho(): void {
   cancel()
 }
 
+/** 暂停：停下声音，记住播到哪里，屏幕留着当前这个 */
+function pauseEcho(): void {
+  const cur = state.echo
+  if (!cur || !cur.active) return
+  // 示范已经播完、正在等孩子读的，继续时直接到下一个；示范播到一半的，继续时重播这个
+  const index = state.screen.waiting ? cur.index + 1 : cur.index
+  cancel()
+  lightKey(null)
+  state.echo = { ...cur, index, active: false }
+  state.screen = { ...state.screen, icon: '⏸', waiting: false, note: '已暂停，再点一下「跟读」继续' }
+}
+
 /**
- * 点「跟读」：没在跟读 → 从第一行开始；正在播 → 停止；一行播完等待中 → 继续下一行。
+ * 点「跟读」：没在跟读 → 从头开始；正在播 → 暂停；暂停中 → 从暂停处继续。
  */
 export function toggleEcho(kind: Sequence): void {
   const cur = state.echo
   if (cur && cur.kind === kind) {
     if (cur.active) {
-      stopEcho()
+      pauseEcho()
       return
     }
-    void playRow(kind, cur.row)
+    void playFrom(kind, cur.index)
     return
   }
   stopEcho()
-  void playRow(kind, 0)
+  void playFrom(kind, 0)
 }
 
-async function playRow(kind: Sequence, row: number): Promise<void> {
-  const rows = rowsOf(kind)
-  const items = rows[row]
-  if (!items) {
-    state.echo = null
-    return
-  }
+async function playFrom(kind: Sequence, start: number): Promise<void> {
+  const items = itemsOf(kind)
   resetSelection()
-  state.echo = { kind, row, rows: rows.length, active: true }
+  state.echo = { kind, index: Math.min(start, items.length), total: items.length, active: true }
   const mine = state.echo
   await run(async (signal) => {
     try {
-      for (const [i, item] of items.entries()) {
+      for (let i = start; i < items.length; i++) {
+        const item = items[i]!
+        mine.index = i
         lightKey(item.id, item.tone)
         state.screen = { ...blankScreen(state.mode), big: item.big, char: item.char, icon: '🔊' }
         await say(item.sound, signal)
         lightKey(null)
         // 第一次跟读：示范完第一个，先用语音说「该你读了」，之后只用提示音 + 等待环
-        if (i === 0 && !toldEchoYou) {
+        if (!toldEchoYou) {
           state.screen = { ...state.screen, icon: '👄' }
           await prompt('echo-you', signal)
           toldEchoYou = true
@@ -105,13 +111,11 @@ async function playRow(kind: Sequence, row: number): Promise<void> {
         await sleep(progress.settings.echoGap, signal)
         state.screen.waiting = false
       }
-      const more = row + 1 < rows.length
-      state.screen = { ...blankScreen(state.mode), icon: '⭐', note: more ? '再点一次「跟读」继续下一行' : '跟读完成' }
-      state.echo = more ? { kind, row: row + 1, rows: rows.length, active: false } : null
+      state.screen = { ...blankScreen(state.mode), icon: '⭐', note: '跟读完成' }
+      state.echo = null
       await prompt('echo-done', signal)
-      if (more) await prompt('echo-next', signal)
     } finally {
-      // 只清理属于本次序列的状态：被 stopEcho() / 新序列打断时它们已经写入自己的 echo 与高亮，不能碰
+      // 只清理属于本次序列的状态：被 stopEcho() / pauseEcho() / 新序列打断时它们已经写入自己的 echo 与高亮，不能碰
       if (!signal.aborted && state.echo === mine) state.echo = null
       if (!signal.aborted) {
         lightKey(null)

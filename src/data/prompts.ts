@@ -28,7 +28,6 @@ export const PROMPTS = {
   parent: '请爸爸妈妈来确认。',
   locked: '这里是给爸爸妈妈用的哦。',
   'press-next': '按绿色的确定键，下一题。',
-  'echo-next': '再点一下跟读，听下一行。',
   'gift-done': '换好了！去找爸爸妈妈领礼物吧。',
   'not-enough': '金币还不够，再去做题赚一些吧。',
   'pick-unit': '请爸爸妈妈先选一下，学到第几课了。',

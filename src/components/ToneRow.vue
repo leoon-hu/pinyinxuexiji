@@ -50,4 +50,10 @@ watch(
   --sel-bg: #fdeceb;
   height: max(38px, calc(var(--key-h) * 0.8));
 }
+
+@media (max-width: 560px) {
+  .tone {
+    height: max(34px, calc(var(--key-h) * 0.85));
+  }
+}
 </style>

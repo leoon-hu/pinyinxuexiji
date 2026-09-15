@@ -251,12 +251,30 @@ button.chip:disabled {
   color: var(--c-text);
 }
 
-/* 小屏：底部三键是 sticky 的，滚动定位时给它留出位置 */
+/* 平板竖屏：标签放大 */
+@media (min-width: 700px) and (min-height: 900px) and (orientation: portrait) {
+  .chip {
+    height: 40px;
+    padding: 0 12px;
+    font-size: 20px;
+  }
+}
+
+/* 小屏：面板、标签都收紧一点；底部三键是 sticky 的，滚动定位时给它留出位置 */
 @media (max-width: 560px) {
+  .panel {
+    padding: 10px;
+  }
+
+  .chip {
+    height: 30px;
+    font-size: 16px;
+  }
+
   .key,
   .grid,
   .tones {
-    scroll-margin-bottom: calc(80px + env(safe-area-inset-bottom));
+    scroll-margin-bottom: calc(70px + env(safe-area-inset-bottom));
     scroll-margin-top: 8px;
   }
 }
