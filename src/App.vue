@@ -104,6 +104,8 @@ onMounted(async () => {
 
 <template>
   <div class="app">
+    <!-- 安装提示条（需求 5.6）：没装到主屏幕时从第一次打开就在最顶上，给家长看的 -->
+    <InstallBanner />
     <TopBar v-if="!phone" @open="openPanel" />
 
     <section class="panel screen-panel">
@@ -219,7 +221,6 @@ onMounted(async () => {
     <ParentModal v-else-if="panel === 'parent'" @close="closePanel" @chart="panel = 'chart'" />
     <ChartModal v-else-if="panel === 'chart'" @close="panel = 'parent'" />
     <AdvancedLogModal v-else-if="panel === 'log'" @close="closePanel" />
-    <InstallBanner />
   </div>
 </template>
 

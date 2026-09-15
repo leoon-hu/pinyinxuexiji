@@ -5,6 +5,8 @@ import { UNITS } from '@/data/units'
 import { progress, practiceStreak, resetProgress, exportBackup, importBackup, todayKey, DEFAULT_GIFTS, type Gift } from '@/store/progress'
 import { play } from '@/services/audio'
 import { run } from '@/store/runner'
+import { install, installedStandalone, promptInstall, type InstallKind } from '@/services/install'
+import InstallStepsModal from '@/components/modals/InstallStepsModal.vue'
 
 function replayKey(key: string): void {
   void run((signal) => play(key, '', signal))
@@ -35,6 +37,20 @@ function restoreGifts(): void {
   progress.gifts = DEFAULT_GIFTS.map((g) => ({ ...g }))
 }
 const coinDelta = ref(10)
+
+/**
+ * 「安装到主屏幕」一节（需求 5.6 的常驻入口）：能一键安装给「安装」，其它环境给「查看步骤」（与首页提示条同一个弹窗）；
+ * 判断顺序与提示条一致（内置浏览器先于 iOS），已从主屏幕打开时写「已安装」
+ */
+const ua = navigator.userAgent
+const installKind = computed<InstallKind | null>(() => {
+  if (installedStandalone) return null
+  if (install.hasPrompt) return 'prompt'
+  if (/MicroMessenger|\bQQ\/|Weibo|FBAN|FBAV|Instagram|Line\//.test(ua)) return 'inapp'
+  if (/iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) return 'ios'
+  return 'menu'
+})
+const installSteps = ref(false)
 function addCoins(n: number): void {
   progress.coins = Math.max(0, progress.coins + n)
 }
@@ -200,6 +216,11 @@ function doReset(): void {
     </section>
 
     <section v-else>
+      <h4 class="sub">安装到主屏幕</h4>
+      <p class="hint">装到主屏幕后从桌面图标打开就是全屏、离线的，孩子自己就能打开。</p>
+      <p v-if="!installKind" class="hint">已安装到主屏幕。</p>
+      <button v-else-if="installKind === 'prompt'" class="btn secondary" @click="promptInstall()">安装</button>
+      <button v-else class="btn secondary" @click="installSteps = true">查看步骤</button>
       <h4 class="sub">备份</h4>
       <p class="hint">浏览器可能清掉本地数据（iPad 上长期不打开尤其如此），建议偶尔备份。</p>
       <button class="btn secondary" @click="showBackup">生成备份码</button>
@@ -225,6 +246,7 @@ function doReset(): void {
       </p>
     </section>
   </AppModal>
+  <InstallStepsModal v-if="installSteps && installKind && installKind !== 'prompt'" :kind="installKind" @close="installSteps = false" />
 </template>
 
 <style scoped>
