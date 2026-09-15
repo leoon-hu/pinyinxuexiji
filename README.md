@@ -52,7 +52,7 @@ npm run audio      # 重新生成 public/audio/（见下文）
 纯静态站：`npm run build` 后把 `dist/` 整个放到任何支持 HTTPS 的静态托管（nginx、对象存储、Pages 服务都行），不需要服务端。`base: './'`，放在子目录也能跑。
 
 - 已注册 Service Worker（vite-plugin-pwa，`registerType: 'autoUpdate'`）：首次打开会把页面、字体和全部录音（约 17 MB）预缓存，之后断网可用；重新部署后再打开会自动换新版本。
-- iPad / iPhone：Safari 打开 <https://pinyin.jiaci.app> → 分享 → **添加到主屏幕**，桌面图标启动是全屏、离线可用。自己部署时**必须是 HTTPS**（局域网 http 地址不行，Service Worker 不会注册）。
+- 首次打开会在底部提示**添加到主屏幕**：Android / Chrome 点「安装」即可；iPad / iPhone 上按提示点 Safari 的分享 → **添加到主屏幕**。桌面图标启动是全屏、离线可用。自己部署时**必须是 HTTPS**（局域网 http 地址不行，Service Worker 不会注册）。
 - 进度、金币、记录都在这台设备的 localStorage 里，换设备用家长区的备份码。
 
 ## 结构

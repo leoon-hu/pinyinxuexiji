@@ -12,6 +12,7 @@ import ParentLock from '@/components/modals/ParentLock.vue'
 import ParentModal from '@/components/modals/ParentModal.vue'
 import ChartModal from '@/components/modals/ChartModal.vue'
 import AdvancedLogModal from '@/components/modals/AdvancedLogModal.vue'
+import InstallBanner from '@/components/InstallBanner.vue'
 import { INITIALS, FINALS, WHOLES, TONES, isMedial, MEDIAL_FINALS, type Initial, type Final, type Whole } from '@/data/pinyin'
 import { PROMPTS } from '@/data/prompts'
 import { initialSound, finalSound, wholeSound, promptSound } from '@/data/sounds'
@@ -218,6 +219,7 @@ onMounted(async () => {
     <ParentModal v-else-if="panel === 'parent'" @close="closePanel" @chart="panel = 'chart'" />
     <ChartModal v-else-if="panel === 'chart'" @close="panel = 'parent'" />
     <AdvancedLogModal v-else-if="panel === 'log'" @close="closePanel" />
+    <InstallBanner />
   </div>
 </template>
 
