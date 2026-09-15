@@ -4,7 +4,7 @@
 import { reactive, watch } from 'vue'
 
 const STORAGE_KEY = 'pinyinxuexiji:v1'
-const CURRENT_VERSION = 3
+const CURRENT_VERSION = 4
 
 export interface Gift {
   id: string
@@ -93,7 +93,7 @@ export function defaultSettings(): Settings {
     unit: 14,
     basicLevel: 1,
     quizSize: 10,
-    echoGap: 1500,
+    echoGap: 2000,
     spellGap: 250,
     sfx: true,
     volume: 1,
@@ -140,6 +140,11 @@ const migrations: Array<(state: Record<string, unknown>) => Record<string, unkno
   },
   // v2 → v3：高级测验逐题记录
   (state) => ({ ...state, advanced: { date: '', items: [] } }),
+  // v3 → v4：跟读留给孩子的时间默认 1.5 s → 2 s。存的还是旧默认值的一起改（分不出是没动过还是特意选的，按没动过算）
+  (state) => {
+    const settings = (state.settings ?? {}) as Record<string, unknown>
+    return settings.echoGap === 1500 ? { ...state, settings: { ...settings, echoGap: 2000 } } : state
+  },
 ]
 
 function load(): Progress {

@@ -16,6 +16,7 @@ import {
   progress, recordRound, recordAdvanced, noteWrong, noteRight, noteAsked, FIRST_ROUND_REWARD, type BasicLevel,
 } from './progress'
 import { run, sleep } from './runner'
+import { shuffle } from './shuffle'
 import { state, blankScreen, keyId, resetSelection, resetFeedback, type Piece, type ScreenAction } from './state'
 import { say, prompt, lightKey } from './player'
 
@@ -80,15 +81,6 @@ const CONFUSABLE: Record<string, string[]> = {
   an: ['ang', 'en', 'ai'], en: ['eng', 'an', 'in'], in: ['ing', 'en', 'ün'],
   un: ['ün', 'en', 'ui'], 'ün': ['un', 'in', 'ü'],
   ang: ['an', 'eng', 'ao'], eng: ['en', 'ang', 'ing'], ing: ['in', 'eng', 'ang'], ong: ['eng', 'ou', 'ang'],
-}
-
-function shuffle<T>(list: T[]): T[] {
-  const a = [...list]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j]!, a[i]!]
-  }
-  return a
 }
 
 /** 薄弱项优先的乱序：答错次数越多越靠前 */

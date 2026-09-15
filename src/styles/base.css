@@ -84,6 +84,7 @@ button.chip:disabled {
   position: relative;
   height: var(--key-h);
   border-radius: var(--radius-key);
+  color: var(--key-color, var(--c-text));
   background: var(--key-bg, var(--c-key));
   box-shadow: var(--shadow-key);
   font-size: var(--key-font);
@@ -110,9 +111,13 @@ button.chip:disabled {
     inset 0 0 0 2px currentColor;
 }
 
+/* 正在发声的键：反色实心 + 白边光环 + 明显弹动。浅色高亮在韵母最后一行的淡绿底色上几乎看不出来，
+   跟读到那里只看得到键在动；实心反色在任何底色上都醒目，而且放到最上层不被邻键盖住 */
 .key.playing {
-  background: var(--sel-bg, #f1e9ff);
-  animation: key-pulse 0.5s ease-in-out infinite alternate;
+  background: var(--key-color, var(--c-orange));
+  color: #fff;
+  z-index: 1;
+  animation: key-sound 0.45s ease-in-out infinite alternate;
 }
 
 /* 测验里不在候选范围的键 */
@@ -143,7 +148,7 @@ button.chip:disabled {
     0 0 0 2px var(--c-amber);
 }
 
-.key:disabled:not(.off):not(.wrong):not(.hint) {
+.key:disabled:not(.off):not(.wrong):not(.hint):not(.playing) {
   opacity: 0.5;
 }
 
@@ -152,12 +157,20 @@ button.chip:disabled {
   cursor: default;
 }
 
-@keyframes key-pulse {
+@keyframes key-sound {
   from {
-    transform: scale(1);
+    transform: scale(1.04);
+    box-shadow:
+      0 0 0 3px #fff,
+      0 0 0 6px var(--key-color, var(--c-orange)),
+      0 3px 10px rgba(0, 0, 0, 0.3);
   }
   to {
-    transform: scale(1.04);
+    transform: scale(1.12);
+    box-shadow:
+      0 0 0 3px #fff,
+      0 0 0 6px var(--key-color, var(--c-orange)),
+      0 6px 18px rgba(0, 0, 0, 0.35);
   }
 }
 

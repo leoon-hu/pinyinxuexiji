@@ -315,7 +315,7 @@ const pieceTone = (p: Piece): Tone | null => (p.kind === 'tone' && p.text ? (Num
   stroke-width: 3;
   stroke-dasharray: 107;
   stroke-dashoffset: 0;
-  animation: ring-shrink var(--wait, 1500ms) linear forwards;
+  animation: ring-shrink var(--wait, 2000ms) linear forwards;
 }
 
 .big {

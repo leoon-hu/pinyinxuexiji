@@ -46,9 +46,9 @@ function closePanel(): void {
 }
 
 /** 跟读按钮：播放中 → 暂停 n/N；暂停中 → 继续 n/N（n/N 是给家长看的，窄屏上不显示） */
-function echoLabel(kind: Sequence): { text: string; prog: string } {
+function echoLabel(kind: Sequence, idle = '跟读'): { text: string; prog: string } {
   const e = state.echo
-  if (!e || e.kind !== kind) return { text: '跟读', prog: '' }
+  if (!e || e.kind !== kind) return { text: idle, prog: '' }
   return { text: e.active ? '暂停' : '继续', prog: `${Math.min(e.index + 1, e.total)}/${e.total}` }
 }
 
@@ -175,6 +175,10 @@ onMounted(async () => {
           @click="toggleEcho('finalsTones')"
         >
           {{ echoLabel('finalsTones').text }}<span v-if="echoLabel('finalsTones').prog" class="prog">{{ echoLabel('finalsTones').prog }}</span><span class="marks"><ToneMark :tone="3" :size="14" /><ToneMark :tone="4" :size="14" /></span>
+        </button>
+        <!-- 随机跟读 = 整个键盘（声母或整体认读音节 + 韵母）打乱一起播；放在这一行是因为声母行显示整体认读音节键盘时在手机上已经满了 -->
+        <button class="chip" :class="{ active: state.echo?.kind === 'random' }" :disabled="inQuiz" @click="toggleEcho('random')">
+          {{ echoLabel('random', '随机跟读').text }}<span v-if="echoLabel('random').prog" class="prog">{{ echoLabel('random').prog }}</span>
         </button>
       </div>
 

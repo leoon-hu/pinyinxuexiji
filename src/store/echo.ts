@@ -1,6 +1,6 @@
 /**
  * 跟读：一组（声母 / 韵母 / 韵母四声 / 整体认读音节 / 整体认读音节四声）从头到尾连着播，每个示范后留出「该你读了」的时间。
- * 播放中再点一次「跟读」= 暂停，再点 = 从暂停的地方继续。
+ * 播放中再点一次「跟读」= 暂停，再点 = 从暂停的地方继续。「随机跟读」= 键盘上的声母（或整体认读音节）+ 韵母打乱一起播。
  */
 import { INITIALS, FINALS, WHOLES, TONES, applyTone, FINAL_STANDALONE, type Tone } from '@/data/pinyin'
 import { exampleChar } from '@/data/syllables'
@@ -8,6 +8,7 @@ import { initialSound, finalSound, wholeSound, type Sound } from '@/data/sounds'
 import { sfxCue } from '@/services/sfx'
 import { progress } from './progress'
 import { run, cancel, sleep } from './runner'
+import { shuffle } from './shuffle'
 import { state, blankScreen, keyId, resetSelection, type Sequence } from './state'
 import { say, prompt, lightKey } from './player'
 
@@ -22,7 +23,17 @@ interface Item {
 /** 「该你读了」每次会话只在第一次跟读时讲一遍，之后只用提示音 */
 let toldEchoYou = false
 
+/** 一组的播放顺序：随机跟读每次开始重新打乱，其余按教材顺序 */
+function orderOf(kind: Sequence, total: number): number[] {
+  const seq = Array.from({ length: total }, (_, i) => i)
+  return kind === 'random' ? shuffle(seq) : seq
+}
+
 function itemsOf(kind: Sequence): Item[] {
+  if (kind === 'random') {
+    // 跟着键盘走：切换整体认读音节键盘会先停掉跟读，所以一组播放中这个集合不会变
+    return [...itemsOf(state.showWholes ? 'wholes' : 'initials'), ...itemsOf('finals')]
+  }
   if (kind === 'initials') {
     return INITIALS.map((i) => ({ id: keyId('initial', i), tone: null, big: i, char: '', sound: initialSound(i) }))
   }
@@ -79,22 +90,24 @@ export function toggleEcho(kind: Sequence): void {
       pauseEcho()
       return
     }
-    void playFrom(kind, cur.index)
+    void playFrom(kind, cur.index, cur.order)
     return
   }
   stopEcho()
   void playFrom(kind, 0)
 }
 
-async function playFrom(kind: Sequence, start: number): Promise<void> {
+/** order 只在「继续」时传入：沿用暂停前那一组的顺序（随机跟读不重新打乱） */
+async function playFrom(kind: Sequence, start: number, order?: number[]): Promise<void> {
   const items = itemsOf(kind)
+  order ??= orderOf(kind, items.length)
   resetSelection()
-  state.echo = { kind, index: Math.min(start, items.length), total: items.length, active: true }
+  state.echo = { kind, index: Math.min(start, items.length), total: items.length, active: true, order }
   const mine = state.echo
   await run(async (signal) => {
     try {
       for (let i = start; i < items.length; i++) {
-        const item = items[i]!
+        const item = items[mine.order[i]!]!
         mine.index = i
         lightKey(item.id, item.tone)
         state.screen = { ...blankScreen(state.mode), big: item.big, char: item.char, icon: '🔊' }

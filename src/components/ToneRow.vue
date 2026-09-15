@@ -46,7 +46,7 @@ watch(
 }
 
 .tone {
-  color: var(--c-tone);
+  --key-color: var(--c-tone);
   --sel-bg: #fdeceb;
   height: max(38px, calc(var(--key-h) * 0.8));
 }

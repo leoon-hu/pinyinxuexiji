@@ -28,7 +28,7 @@ import { state, resetSelection, resetFeedback } from '../state'
 import { progress, advancedToday, advancedStats, clearAdvancedLog, recordAdvanced } from '../progress'
 import { setMode, pressInitial, pressFinal, pressTone, replay, confirm, toggleEcho, toggleWholes, interrupt, restartAdvanced } from '../session'
 import { cancel } from '../runner'
-import { toKey } from '@/data/pinyin'
+import { toKey, INITIALS, FINALS, WHOLES } from '@/data/pinyin'
 import { exampleChar } from '@/data/syllables'
 import { wordsFor } from '@/data/words'
 import type { BasicTarget, AdvancedTarget } from '../quiz'
@@ -54,6 +54,7 @@ beforeEach(() => {
   progress.settings.echoGap = 1500
   state.quiz = null
   state.mode = 'read'
+  state.showWholes = false
 })
 
 describe('测验里的重听', () => {
@@ -208,7 +209,7 @@ describe('跟读', () => {
     toggleEcho('initials')
     await wait(10)
     toggleEcho('initials')
-    expect(state.echo).toEqual({ kind: 'initials', index: 0, total: 23, active: false })
+    expect(state.echo).toMatchObject({ kind: 'initials', index: 0, total: 23, active: false })
     expect(state.playing).toBeNull()
     expect(state.screen.icon).toBe('⏸')
     expect(state.screen.waiting).toBe(false)
@@ -229,7 +230,7 @@ describe('跟读', () => {
     await wait(120)
     expect(state.screen.waiting).toBe(true)
     toggleEcho('initials')
-    expect(state.echo).toEqual({ kind: 'initials', index: 1, total: 23, active: false })
+    expect(state.echo).toMatchObject({ kind: 'initials', index: 1, total: 23, active: false })
     toggleEcho('initials')
     await wait(10)
     expect(state.playing).toBe('initial:p')
@@ -252,6 +253,40 @@ describe('跟读', () => {
     expect(state.showWholes).toBe(false)
     expect(state.echo).toBeNull()
     expect(state.playing).toBeNull()
+    interrupt()
+  })
+
+  it('随机跟读：声母 + 韵母打乱一起播，暂停后继续沿用同一顺序', async () => {
+    progress.settings.echoGap = 300
+    setMode('read')
+    await wait(50)
+    toggleEcho('random')
+    await wait(10)
+    const all = [...INITIALS.map((i) => `initial:${i}`), ...FINALS.map((f) => `final:${f}`)]
+    expect(state.echo).toMatchObject({ kind: 'random', index: 0, total: all.length, active: true })
+    const order = [...state.echo!.order]
+    expect([...order].sort((a, b) => a - b)).toEqual(all.map((_, i) => i))
+    expect(order).not.toEqual(all.map((_, i) => i))
+    expect(state.playing).toBe(all[order[0]!])
+    await wait(120)
+    toggleEcho('random')
+    expect(state.echo).toMatchObject({ kind: 'random', index: 1, active: false, order })
+    toggleEcho('random')
+    await wait(10)
+    expect(state.echo?.order).toEqual(order)
+    expect(state.playing).toBe(all[order[1]!])
+    interrupt()
+  })
+
+  it('显示整体认读音节键盘时，随机跟读混的是整体认读音节 + 韵母', async () => {
+    progress.settings.echoGap = 300
+    setMode('read')
+    await wait(50)
+    toggleWholes()
+    toggleEcho('random')
+    await wait(10)
+    expect(state.echo).toMatchObject({ kind: 'random', total: WHOLES.length + FINALS.length, active: true })
+    expect(state.playing).toMatch(/^(whole|final):/)
     interrupt()
   })
 

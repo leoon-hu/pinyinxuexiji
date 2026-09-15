@@ -118,19 +118,23 @@ watch(
   gap: var(--row-gap) var(--gap);
 }
 
-.grid-initial .key {
-  color: var(--c-initial);
+/* 组的颜色挂在容器上，键的文字色 / 发声反色由全局 .key 规则读 --key-color */
+.grid-initial {
+  --key-color: var(--c-initial);
   --sel-bg: #f1e9ff;
 }
 
-.grid-final .key {
-  color: var(--c-final);
+.grid-final {
+  --key-color: var(--c-final);
   --sel-bg: #e6f5ea;
 }
 
-.grid-whole .key {
-  color: var(--c-whole);
+.grid-whole {
+  --key-color: var(--c-whole);
   --sel-bg: #fdeee2;
+}
+
+.grid-whole .key {
   font-size: calc(var(--key-font) * 0.85);
 }
 
