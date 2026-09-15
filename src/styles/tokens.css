@@ -1,0 +1,97 @@
+/* 设计变量：颜色取自设计稿，组件里只用变量不写死颜色 */
+
+/* 拼音字体：SIL Andika（OFL），专为初学阅读设计，ɑ ɡ 默认单层，带全部声调符号；自托管，离线可用 */
+@font-face {
+  font-family: 'Andika';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/andika-400-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F;
+}
+@font-face {
+  font-family: 'Andika';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/andika-400-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F;
+}
+@font-face {
+  font-family: 'Andika';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/andika-700-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F;
+}
+@font-face {
+  font-family: 'Andika';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/andika-700-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F;
+}
+
+:root {
+  --c-bg: #f6c3cb; /* 粉色底 */
+  --c-panel: #fff8ed; /* 奶油色面板 */
+  --c-screen: #1f2b3c; /* 深色显示屏 */
+  --c-screen-text: #fff;
+  --c-key: #ffffff;
+  --c-key-press: #f3eee6;
+  --c-initial: #7b45e6; /* 声母·紫 */
+  --c-medial: #1f8fa8; /* 介母·青 */
+  --c-final: #3a8a5c; /* 韵母·绿 */
+  --c-whole: #a9572b; /* 整体认读音节·棕橙 */
+  --c-tone: #e0301e; /* 声调·红 */
+  --c-orange: #f4521e; /* 当前模式 */
+  --c-amber: #f5a623; /* 重听 */
+  --c-blue: #64a6f2; /* 清除 */
+  --c-green: #4cae5b; /* 确定可用 */
+  --c-gray: #b3b3b3; /* 未激活 */
+  --c-ok: #4cae5b;
+  --c-bad: #e0301e;
+  --c-text: #333;
+  --c-muted: #8a8a8a;
+  --c-line: #eadfd0;
+  --c-coin: #f08a24;
+
+  /* 韵母键盘四行的淡底色：单韵母 / 复韵母 / 前鼻 / 后鼻 */
+  --tint-1: #ffffff;
+  --tint-2: #f6fbf7;
+  --tint-3: #eef8f1;
+  --tint-4: #e6f4ea;
+
+  --shadow-key: 0 2px 4px rgba(0, 0, 0, 0.18);
+  --shadow-chip: 0 1px 3px rgba(0, 0, 0, 0.18);
+  --radius-panel: 14px;
+  --radius-key: 10px;
+
+  --font-ui: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', system-ui, sans-serif;
+  --font-pinyin: 'Andika', 'Arial', 'Helvetica Neue', sans-serif;
+
+  --key-h: 46px;
+  --key-font: 32px;
+  --gap: 8px;
+  --row-gap: 16px;
+}
+
+@media (max-width: 480px) {
+  :root {
+    --key-h: 42px;
+    --key-font: 24px;
+    --gap: 6px;
+    --row-gap: 10px;
+  }
+}
+
+/* iPad 横屏等矮宽视口：键盘按高度缩放，一屏放下 */
+@media (min-width: 900px) and (max-height: 1000px) {
+  :root {
+    --key-h: clamp(36px, 5.5vh, 46px);
+    --key-font: clamp(24px, 3.8vh, 32px);
+    --row-gap: clamp(6px, 1.2vh, 14px);
+  }
+}

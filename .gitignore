@@ -1,0 +1,15 @@
+node_modules
+dist
+.idea
+.DS_Store
+.env
+docs/
+deploy/
+
+# 原始录音里许可未明确的部分不进仓库（获取方法见 audio-src/README.md 与 scripts/build-audio.py 头部）
+audio-src/teacher/
+audio-src/yinjie/
+audio-src/misc/
+audio-src/overrides/ch.mp3
+audio-src/overrides/chi.mp3
+audio-src/overrides/chi1.mp3

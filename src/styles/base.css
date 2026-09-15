@@ -1,0 +1,262 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  overscroll-behavior: none;
+}
+
+button {
+  font-family: inherit;
+  color: inherit;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+.pinyin {
+  font-family: var(--font-pinyin);
+  letter-spacing: 0.01em;
+}
+
+/* 奶油色面板 */
+.panel {
+  background: var(--c-panel);
+  border-radius: var(--radius-panel);
+  padding: 14px;
+}
+
+/* 小标签 / 小按钮：声母、跟读… */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: var(--c-key);
+  box-shadow: var(--shadow-chip);
+  font-size: 18px;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    transform 0.08s,
+    background 0.15s;
+}
+
+button.chip:not(:disabled):active {
+  transform: translateY(1px);
+  background: var(--c-key-press);
+}
+
+button.chip:disabled {
+  opacity: 0.45;
+}
+
+.chip.active {
+  background: var(--c-amber);
+  color: #fff;
+}
+
+/* 键盘按键 */
+.key {
+  position: relative;
+  height: var(--key-h);
+  border-radius: var(--radius-key);
+  background: var(--key-bg, var(--c-key));
+  box-shadow: var(--shadow-key);
+  font-size: var(--key-font);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 0.08s,
+    background 0.12s,
+    box-shadow 0.12s,
+    opacity 0.2s;
+}
+
+.key:not(:disabled):active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+
+.key.selected {
+  background: var(--sel-bg, #f1e9ff);
+  box-shadow:
+    var(--shadow-key),
+    inset 0 0 0 2px currentColor;
+}
+
+.key.playing {
+  background: var(--sel-bg, #f1e9ff);
+  animation: key-pulse 0.5s ease-in-out infinite alternate;
+}
+
+/* 测验里不在候选范围的键 */
+.key.off {
+  opacity: 0.28;
+}
+
+/* 本题点错的键 */
+.key.wrong {
+  opacity: 0.35;
+  background: #fde8e6;
+  animation: key-shake 0.4s;
+}
+
+/* 需要孩子点一下的键 */
+.key.hint {
+  animation: key-flash 0.8s ease-in-out infinite;
+  box-shadow:
+    var(--shadow-key),
+    0 0 0 3px var(--c-amber);
+}
+
+/* 测验错过、回到点读时提示复习的键 */
+.key.review {
+  animation: key-breathe 1.6s ease-in-out infinite;
+  box-shadow:
+    var(--shadow-key),
+    0 0 0 2px var(--c-amber);
+}
+
+.key:disabled:not(.off):not(.wrong):not(.hint) {
+  opacity: 0.5;
+}
+
+.key.blank {
+  box-shadow: var(--shadow-key);
+  cursor: default;
+}
+
+@keyframes key-pulse {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.04);
+  }
+}
+
+@keyframes key-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+  75% {
+    transform: translateX(-3px);
+  }
+}
+
+@keyframes key-flash {
+  0%,
+  100% {
+    background: var(--c-key);
+    transform: scale(1);
+  }
+  50% {
+    background: #fff1d6;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes key-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+/* 通用大按钮（弹窗里） */
+.btn {
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 10px;
+  background: var(--c-amber);
+  color: #fff;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn:disabled {
+  background: var(--c-gray);
+  opacity: 0.7;
+}
+
+.btn.secondary {
+  background: var(--c-blue);
+}
+
+.btn.plain {
+  background: var(--c-gray);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.field .label {
+  font-size: 14px;
+  color: var(--c-muted);
+}
+
+.select,
+.input {
+  width: 100%;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--c-line);
+  background: var(--c-key);
+  padding: 0 10px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--c-text);
+}
+
+/* 小屏：底部三键是 sticky 的，滚动定位时给它留出位置 */
+@media (max-width: 560px) {
+  .key,
+  .grid,
+  .tones {
+    scroll-margin-bottom: calc(80px + env(safe-area-inset-bottom));
+    scroll-margin-top: 8px;
+  }
+}
