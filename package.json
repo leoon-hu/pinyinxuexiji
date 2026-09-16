@@ -10,6 +10,7 @@
     "typecheck": "vue-tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "screenshots": "node scripts/screenshots.mjs",
     "audio": "python3 scripts/build-audio.py --teacher audio-src/teacher --syllables audio-src/yinjie --cmn audio-src/cmn"
   },
   "dependencies": {

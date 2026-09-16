@@ -9,6 +9,13 @@
 - **纯前端、离线**：没有后端、不用注册，安装到平板后断网也能用；进度、金币、记录都存在设备本地。
 - **家长少操心**：出题范围跟着「学到第几课」走，常错的会多考；金币换礼物由家长兑现，家长设置藏在长按齿轮 + 一道加法题后面。
 
+<p align="center">
+  <img src="screenshots/read.png" width="24%" alt="点读">
+  <img src="screenshots/spell.png" width="24%" alt="拼读：b + a + 一声 → bā">
+  <img src="screenshots/quiz.png" width="24%" alt="高级测验">
+  <img src="screenshots/echo.png" width="24%" alt="跟读">
+</p>
+
 ```bash
 npm install
 npm run dev        # http://localhost:5173
@@ -16,6 +23,7 @@ npm run build      # vue-tsc --noEmit && vite build → dist/
 npm run typecheck
 npm test           # vitest：标调 / 拼写规则、题库、录音包完整性
 npm run audio      # 重新生成 public/audio/（见下文）
+npm run screenshots  # npm run dev 之后：无头 Chrome 模拟 iPhone 截 README 用的预览图到 screenshots/
 ```
 
 ## 功能
@@ -77,5 +85,6 @@ src/
   store/progress.ts     金币 / 记录 / 高级测验逐题记录 / 礼物 / 家长设置的持久化（key pinyinxuexiji:v1，带迁移）
   components/           顶栏、显示屏、键盘、声调行、底部三键、礼物 / 家长 / 高级测验记录弹窗
 scripts/build-audio.py  生成音频包
+scripts/screenshots.mjs README 用的预览图 → screenshots/（不进构建产物）
 public/fonts/           Andika（SIL OFL）：ɑ ɡ 单层字形 + 全部声调符号，离线可用
 ```
