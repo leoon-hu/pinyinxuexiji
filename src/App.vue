@@ -15,6 +15,7 @@ import AdvancedLogModal from '@/components/modals/AdvancedLogModal.vue'
 import InstallBanner from '@/components/InstallBanner.vue'
 import { INITIALS, FINALS, WHOLES, TONES, isMedial, MEDIAL_FINALS, type Initial, type Final, type Whole } from '@/data/pinyin'
 import { PROMPTS } from '@/data/prompts'
+import { SISTER_SITES } from '@/data/sites'
 import { initialSound, finalSound, wholeSound, promptSound } from '@/data/sounds'
 import {
   state, inQuiz, keysLocked,
@@ -210,6 +211,12 @@ onMounted(async () => {
       <ActionBar class="actions" />
     </section>
 
+    <!-- 页脚「更多应用」（需求 5.7）：给家长看的小字，链到同一作者的另外三个站；手机上在三键下面，要再往下滚一点 -->
+    <footer class="sites">
+      <span>更多应用</span>
+      <a v-for="s in SISTER_SITES" :key="s.url" :href="s.url" target="_blank" rel="noopener">{{ s.name }}<small>{{ s.desc }}</small></a>
+    </footer>
+
     <ConfirmDialog
       v-if="state.confirmDialog"
       :text="state.confirmDialog.text"
@@ -291,10 +298,39 @@ onMounted(async () => {
   margin-top: 24px;
 }
 
+.sites {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0 14px;
+  font-size: 13px;
+  color: var(--c-muted);
+}
+
+.sites a {
+  color: var(--c-text);
+  font-weight: 600;
+  text-decoration: none;
+  /* 家长用的小链接，高度也别小于常规点击目标 */
+  padding: 10px 2px;
+}
+
+.sites small {
+  margin-left: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--c-muted);
+}
+
 @media (max-width: 560px) {
   .app {
     padding: calc(6px + env(safe-area-inset-top, 0px)) 6px 0;
     gap: 8px;
+  }
+
+  .sites {
+    padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
   }
 
   .finals-head {
@@ -335,6 +371,10 @@ onMounted(async () => {
     grid-column: 2;
     grid-row: 1 / span 2;
     gap: var(--row-gap);
+  }
+
+  .sites {
+    grid-column: 1 / -1;
   }
 
   .finals-head,

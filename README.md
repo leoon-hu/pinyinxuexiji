@@ -63,6 +63,14 @@ npm run screenshots  # npm run dev 之后：无头 Chrome 模拟 iPhone 截 READ
 - 没从主屏幕打开时，页面顶上有一条给家长的「安装 拼音学习机」提示：Android / 电脑 Chrome、Edge 点「安装」直接弹系统安装框；iPad / iPhone 点「怎么做」看步骤（Safari 分享 → **添加到主屏幕**，不在 Safari 里先教换 Safari）；微信 / QQ 里教先在浏览器打开。关掉 3 天后再提示，装好就不再出现；家长设置 → 数据 里也有「安装到主屏幕」入口。桌面图标启动是全屏、离线可用。自己部署时**必须是 HTTPS**（局域网 http 地址不行，Service Worker 不会注册）。
 - 进度、金币、记录都在这台设备的 localStorage 里，换设备用家长区的备份码。
 
+## 同一作者的其它学习应用
+
+页面底部的「更多应用」链到这三个站：
+
+- [AI加词](https://jiaci.app)：背单词，FSRS 间隔重复、AI 填充的词条资料、真人级发音。
+- [同步练](https://tongbulian.jiaci.app)：人教版小学同步练习，按单元随机出题、汉字注音、题目朗读。
+- [识字卡片](https://kapian.jiaci.app)：2–4 岁看图听音认知卡片，中英文、离线。
+
 ## 结构
 
 ```
@@ -73,6 +81,7 @@ src/
   data/words.ts         例字 → 词语表（对应 public/audio/w-*.mp3）
   data/prompts.ts       引导语文本（对应 public/audio/p-*.mp3）
   data/sounds.ts        「要播什么」→ 录音 key + TTS 兜底文字
+  data/sites.ts         页脚「更多应用」里同一作者另外三个站的名单
   services/audio.ts     播放引擎（录音优先，TTS 兜底）
   services/speech.ts    浏览器 TTS 兜底
   services/sfx.ts       答题音效（WebAudio 合成）
