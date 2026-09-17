@@ -25,6 +25,7 @@ import {
 import type { Sequence } from '@/store/state'
 import { progress } from '@/store/progress'
 import { initAudio, unlockAudio, preload, configureAudio } from '@/services/audio'
+import { installWay } from '@/services/install'
 import { configureSfx } from '@/services/sfx'
 
 type Panel = 'gift' | 'lock' | 'parent' | 'chart' | 'log' | null
@@ -104,7 +105,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="app">
+  <!-- has-banner：横屏两栏布局要知道提示条在不在，才能把它横跨两栏放在第一行、左右两栏都从第二行开始 -->
+  <div class="app" :class="{ 'has-banner': installWay }">
     <!-- 安装提示条（需求 5.6）：没装到主屏幕时从第一次打开就在最顶上，给家长看的 -->
     <InstallBanner />
     <TopBar v-if="!phone" @open="openPanel" />
@@ -371,6 +373,19 @@ onMounted(async () => {
     grid-column: 2;
     grid-row: 1 / span 2;
     gap: var(--row-gap);
+  }
+
+  /* 安装提示条在时：它横跨两栏占第一行，顶栏 / 显示屏 / 键盘都往下挪一行（否则显示屏会被自动排到键盘下面） */
+  .app.has-banner {
+    grid-template-rows: max-content max-content 1fr;
+  }
+
+  .app.has-banner :deep(.banner) {
+    grid-column: 1 / -1;
+  }
+
+  .app.has-banner .keys {
+    grid-row: 2 / span 2;
   }
 
   .sites {
