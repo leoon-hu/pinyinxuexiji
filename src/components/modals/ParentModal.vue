@@ -7,6 +7,9 @@ import { play } from '@/services/audio'
 import { run } from '@/store/runner'
 import { install, installedStandalone, promptInstall, type InstallKind } from '@/services/install'
 import InstallStepsModal from '@/components/modals/InstallStepsModal.vue'
+import ContactModal from '@/components/modals/ContactModal.vue'
+import { AUTHOR_CONTACT, OPEN_CLAIM, REPO_URL } from '@/data/sites'
+import { share } from '@/store/share'
 
 function replayKey(key: string): void {
   void run((signal) => play(key, '', signal))
@@ -51,6 +54,8 @@ const installKind = computed<InstallKind | null>(() => {
   return 'menu'
 })
 const installSteps = ref(false)
+/** 「关于」里的「联系站长」（需求 5.7）：与页脚同一个二维码弹窗 */
+const contactOpen = ref(false)
 function addCoins(n: number): void {
   progress.coins = Math.max(0, progress.coins + n)
 }
@@ -244,9 +249,16 @@ function doReset(): void {
       <p class="hint">
         拼音录音：声母 / 韵母 / 整体认读来自教材配套呼读音录音；音节来自 audio-cmn（Chen Wang 王琛 等，CC BY-SA 3.0）；引导语为合成语音。详见 audio/CREDITS.md。
       </p>
+      <p class="hint">{{ OPEN_CLAIM }}<a :href="REPO_URL" target="_blank" rel="noopener">GitHub 源码 ↗</a></p>
+      <p class="hint">觉得好用就分享给朋友；有问题、建议或想要的功能，加站长微信直接说。</p>
+      <div class="row-btns">
+        <button class="btn secondary" @click="share()">分享给朋友</button>
+        <button class="btn secondary" @click="contactOpen = true">{{ AUTHOR_CONTACT.label }}</button>
+      </div>
     </section>
   </AppModal>
   <InstallStepsModal v-if="installSteps && installKind && installKind !== 'prompt'" :kind="installKind" @close="installSteps = false" />
+  <ContactModal v-if="contactOpen" @close="contactOpen = false" />
 </template>
 
 <style scoped>
@@ -287,6 +299,12 @@ function doReset(): void {
   color: var(--c-muted);
   margin: 0 0 12px;
   line-height: 1.5;
+}
+
+.hint a {
+  color: var(--c-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .sub {

@@ -41,6 +41,7 @@ npm run screenshots  # npm run dev 之后：无头 Chrome 模拟 iPhone 截 READ
 - 🎁 礼物由家长兑现：孩子点想要的礼物 → 弹出「请爸爸妈妈来」→ 家长答一道两位数加法确认。
 - 布局：手机、平板竖屏、横屏各有一套，键高都按屏幕高度算，整个键盘尽量一屏放下；手机上金币 / 礼物 / 设置竖排在显示屏左边，iPad 横屏等矮宽视口改为左（显示屏）右（键盘）两栏；手机底部三键固定，候选键 / 闪烁键会自动滚到可见位置。
 - 家长区：**按住右上角齿轮 1.2 秒**，答一道加法题进入。可设学到第几课、测验难度、题数、跟读间隔、音量、礼物清单与价格、金币加减，看每天的练习记录和常错项，生成 / 恢复备份码（浏览器可能清掉本地数据）。
+- 开源、干净：代码全部以 MIT 许可公开在这个仓库里，谁都能查、也能自己部署一套；免费、无广告、不用注册、不收集个人信息，录音全部打包在应用里。键盘下面的页脚和家长设置「关于」都写着这一句并链到仓库；「分享给朋友」一键调系统分享面板（微信里教用右上角菜单，电脑上复制一段话 + 链接）；「联系站长」弹作者微信二维码。
 
 ## 发音
 
@@ -71,6 +72,12 @@ npm run screenshots  # npm run dev 之后：无头 Chrome 模拟 iPhone 截 READ
 - [同步练](https://tongbulian.jiaci.app)：人教版小学同步练习，按单元随机出题、汉字注音、题目朗读。
 - [识字卡片](https://kapian.jiaci.app)：2–4 岁看图听音认知卡片，中英文、离线。
 
+## 联系作者
+
+哪个音读得不准、想要什么功能，欢迎加作者微信直接说（页脚与家长设置「关于」里的「联系站长」是同一张二维码）：
+
+<img src="public/wechat-qrcode.jpg" width="200" alt="作者微信二维码">
+
 ## 结构
 
 ```
@@ -81,11 +88,12 @@ src/
   data/words.ts         例字 → 词语表（对应 public/audio/w-*.mp3）
   data/prompts.ts       引导语文本（对应 public/audio/p-*.mp3）
   data/sounds.ts        「要播什么」→ 录音 key + TTS 兜底文字
-  data/sites.ts         页脚「更多应用」里同一作者另外三个站的名单
+  data/sites.ts         站点地址、源码仓库、「开源」一句、分享文案、页脚「更多应用」里同一作者另外三个站的名单、站长微信二维码
   services/audio.ts     播放引擎（录音优先，TTS 兜底）
   services/speech.ts    浏览器 TTS 兜底
   services/sfx.ts       答题音效（WebAudio 合成）
   services/report.ts    高级测验记录 → 可分享的 PNG（canvas）
+  services/share.ts     分享给朋友：按环境选系统分享面板 / 微信菜单提示 / 复制（纯逻辑可单测）；面板状态在 store/share.ts
   store/state.ts        界面状态（模式、选择、屏幕、按键高亮）
   store/runner.ts       独占的声音序列（AbortController）
   store/session.ts      模式切换、按键分发、点读 / 拼读逻辑、拼读演示

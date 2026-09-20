@@ -13,9 +13,11 @@ import ParentModal from '@/components/modals/ParentModal.vue'
 import ChartModal from '@/components/modals/ChartModal.vue'
 import AdvancedLogModal from '@/components/modals/AdvancedLogModal.vue'
 import InstallBanner from '@/components/InstallBanner.vue'
+import ContactModal from '@/components/modals/ContactModal.vue'
+import SharePanel from '@/components/modals/SharePanel.vue'
 import { INITIALS, FINALS, WHOLES, TONES, isMedial, MEDIAL_FINALS, type Initial, type Final, type Whole } from '@/data/pinyin'
 import { PROMPTS } from '@/data/prompts'
-import { SISTER_SITES } from '@/data/sites'
+import { AUTHOR_CONTACT, OPEN_CLAIM, REPO_URL, SISTER_SITES } from '@/data/sites'
 import { initialSound, finalSound, wholeSound, promptSound } from '@/data/sounds'
 import {
   state, inQuiz, keysLocked,
@@ -27,8 +29,9 @@ import { progress } from '@/store/progress'
 import { initAudio, unlockAudio, preload, configureAudio } from '@/services/audio'
 import { installWay } from '@/services/install'
 import { configureSfx } from '@/services/sfx'
+import { share } from '@/store/share'
 
-type Panel = 'gift' | 'lock' | 'parent' | 'chart' | 'log' | null
+type Panel = 'gift' | 'lock' | 'parent' | 'chart' | 'log' | 'contact' | null
 const panel = ref<Panel>(null)
 
 /** 手机竖屏：金币 / 礼物 / 齿轮不单独占一行，竖排在显示屏左边，省下一行高度给键盘 */
@@ -36,7 +39,7 @@ const phoneQuery = matchMedia('(max-width: 560px)')
 const phone = ref(phoneQuery.matches)
 phoneQuery.addEventListener('change', (e) => (phone.value = e.matches))
 
-function openPanel(p: 'gift' | 'parent' | 'log'): void {
+function openPanel(p: 'gift' | 'parent' | 'log' | 'contact'): void {
   // 弹窗盖住键盘，底下的序列（演示 / 跟读 / 测验过渡）先停
   interrupt()
   panel.value = p === 'parent' ? 'lock' : p
@@ -213,10 +216,19 @@ onMounted(async () => {
       <ActionBar class="actions" />
     </section>
 
-    <!-- 页脚「更多应用」（需求 5.7）：给家长看的小字，链到同一作者的另外三个站；手机上在三键下面，要再往下滚一点 -->
-    <footer class="sites">
-      <span>更多应用</span>
-      <a v-for="s in SISTER_SITES" :key="s.url" :href="s.url" target="_blank" rel="noopener">{{ s.name }}<small>{{ s.desc }}</small></a>
+    <!-- 页脚（需求 5.7）：给家长看的小字，手机上在三键下面、要再往下滚一点——一句「开源」说明 + 三个动作（GitHub 源码 / 分享给朋友 /
+         联系站长）+ 「更多应用」链到同一作者的另外三个站；分享 / 联系站长是按钮，弹面板而不是跳走 -->
+    <footer class="foot">
+      <p class="open">{{ OPEN_CLAIM }}</p>
+      <p class="actions-row">
+        <a :href="REPO_URL" target="_blank" rel="noopener">GitHub 源码 ↗</a>
+        <button class="share" @click="share()">分享给朋友</button>
+        <button class="contact" @click="openPanel('contact')">{{ AUTHOR_CONTACT.label }}</button>
+      </p>
+      <p class="sites">
+        <span>更多应用</span>
+        <a v-for="s in SISTER_SITES" :key="s.url" :href="s.url" target="_blank" rel="noopener">{{ s.name }}<small>{{ s.desc }}</small></a>
+      </p>
     </footer>
 
     <ConfirmDialog
@@ -230,6 +242,9 @@ onMounted(async () => {
     <ParentModal v-else-if="panel === 'parent'" @close="closePanel" @chart="panel = 'chart'" />
     <ChartModal v-else-if="panel === 'chart'" @close="panel = 'parent'" />
     <AdvancedLogModal v-else-if="panel === 'log'" @close="closePanel" />
+    <ContactModal v-else-if="panel === 'contact'" @close="closePanel" />
+    <!-- 「分享给朋友」在没有系统分享面板的环境下弹的面板（5.7）；不走 panel（分享不打断正在播的序列） -->
+    <SharePanel />
   </div>
 </template>
 
@@ -300,22 +315,54 @@ onMounted(async () => {
   margin-top: 24px;
 }
 
+.foot {
+  font-size: 13px;
+  color: var(--c-muted);
+  text-align: center;
+}
+
+.foot p {
+  margin: 0;
+}
+
+.open {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0 6px;
+  line-height: 1.5;
+}
+
+.actions-row,
 .sites {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   gap: 0 14px;
-  font-size: 13px;
-  color: var(--c-muted);
 }
 
-.sites a {
+.actions-row {
+  gap: 0 18px;
+}
+
+.foot a,
+.foot button {
   color: var(--c-text);
+  font: inherit;
   font-weight: 600;
   text-decoration: none;
   /* 家长用的小链接，高度也别小于常规点击目标 */
   padding: 10px 2px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+/* 三个动作带下划线，和「更多应用」的站名区分开；分享 / 联系站长是按钮，长得和链接一样 */
+.actions-row a,
+.actions-row button {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .sites small {
@@ -331,7 +378,7 @@ onMounted(async () => {
     gap: 8px;
   }
 
-  .sites {
+  .foot {
     padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
   }
 
@@ -388,7 +435,7 @@ onMounted(async () => {
     grid-row: 2 / span 2;
   }
 
-  .sites {
+  .foot {
     grid-column: 1 / -1;
   }
 
