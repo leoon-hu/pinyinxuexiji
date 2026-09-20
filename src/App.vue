@@ -321,11 +321,8 @@ onMounted(async () => {
   text-align: center;
 }
 
-.foot p {
-  margin: 0;
-}
-
-.open {
+/* 开源那一句限宽居中：iPad 横屏 / 电脑上页脚横跨两栏，margin: auto 才不会贴在左栏（别再用 .foot p 之类更高优先级的规则把 margin 压成 0） */
+.foot .open {
   max-width: 560px;
   margin: 0 auto;
   padding: 0 6px;
@@ -334,6 +331,7 @@ onMounted(async () => {
 
 .actions-row,
 .sites {
+  margin: 0;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
