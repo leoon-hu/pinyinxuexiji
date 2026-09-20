@@ -69,7 +69,7 @@ npm run screenshots  # npm run dev 之后：无头 Chrome 模拟 iPhone 截 READ
 页面底部的「更多应用」链到这三个站：
 
 - [AI加词](https://jiaci.app)：背单词，FSRS 间隔重复、AI 填充的词条资料、真人级发音。
-- [同步练](https://tongbulian.jiaci.app)：人教版小学同步练习，按单元随机出题、汉字注音、题目朗读。
+- [同步练-对战版](https://tongbulian.jiaci.app)：把人教版课本的知识点测验变成游戏积分，谁先答对 8 题谁赢——打机器人、两人一台或多设备扫码组队；也能一个人安静地练，汉字注音、题目朗读。
 - [识字卡片](https://kapian.jiaci.app)：2–4 岁看图听音认知卡片，中英文、离线。
 
 ## 联系作者
