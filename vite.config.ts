@@ -1,13 +1,29 @@
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vitest/config'
+import { loadEnv, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
+import { analyticsAttrs, analyticsConfig } from './src/services/analytics'
 
-export default defineConfig({
+/**
+ * 访问统计标签（需求 5.8，services/analytics.ts）：.env 里 VITE_UMAMI_SCRIPT / VITE_UMAMI_WEBSITE_ID 都有时，正式构建把
+ * 一行 <script defer> 写进 index.html 的 <head>；dev 不加，没配置什么都不加。
+ */
+function analyticsTag(env: Record<string, string>): Plugin {
+  const cfg = analyticsConfig(env)
+  return {
+    name: 'analytics-tag',
+    apply: 'build',
+    transformIndexHtml: () => (cfg ? [{ tag: 'script', attrs: analyticsAttrs(cfg), injectTo: 'head' }] : []),
+  }
+}
+
+export default defineConfig(({ mode }) => ({
   // 相对路径：构建产物放到任意子目录都能跑；双击 dist/index.html 也能用（音频走 <audio> 元素）
   base: './',
   plugins: [
     vue(),
+    analyticsTag(loadEnv(mode, process.cwd(), 'VITE_')),
     // PWA：iPad「添加到主屏幕」后离线可用。整包（页面 + 字体 + 3700 个录音，约 17 MB）首次打开时预缓存
     VitePWA({
       registerType: 'autoUpdate',
@@ -45,4 +61,4 @@ export default defineConfig({
     environment: 'node',
     include: ['src/**/__tests__/**/*.test.ts'],
   },
-})
+}))

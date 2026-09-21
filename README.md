@@ -63,6 +63,7 @@ npm run screenshots  # npm run dev 之后：无头 Chrome 模拟 iPhone 截 READ
 - 已注册 Service Worker（vite-plugin-pwa，`registerType: 'autoUpdate'`）：首次打开会把页面、字体和全部录音（约 17 MB）预缓存，之后断网可用；重新部署后再打开会自动换新版本。
 - 没从主屏幕打开时，页面顶上有一条给家长的「安装 拼音学习机」提示：Android / 电脑 Chrome、Edge 点「安装」直接弹系统安装框；iPad / iPhone 点「怎么做」看步骤（Safari 分享 → **添加到主屏幕**，不在 Safari 里先教换 Safari）；微信 / QQ 里教先在浏览器打开。关掉 3 天后再提示，装好就不再出现；家长设置 → 数据 里也有「安装到主屏幕」入口。桌面图标启动是全屏、离线可用。自己部署时**必须是 HTTPS**（局域网 http 地址不行，Service Worker 不会注册）。
 - 进度、金币、记录都在这台设备的 localStorage 里，换设备用家长区的备份码。
+- 访问统计（可选）：本机 `.env` 里同时写 `VITE_UMAMI_SCRIPT=https://你的统计站/script.js` 与 `VITE_UMAMI_WEBSITE_ID=<站点 id>`，正式构建会往 `index.html` 的 `<head>` 里加一行 [Umami](https://umami.is)（开源、无 cookie）的上报脚本，只记页面、来源、设备与地区，进度与测验记录不上报；两项都不配就什么都不加。逻辑在 `src/services/analytics.ts`（可单测）。
 
 ## 同一作者的其它学习应用
 
@@ -94,6 +95,7 @@ src/
   services/sfx.ts       答题音效（WebAudio 合成）
   services/report.ts    高级测验记录 → 可分享的 PNG（canvas）
   services/share.ts     分享给朋友：按环境选系统分享面板 / 微信菜单提示 / 复制（纯逻辑可单测）；面板状态在 store/share.ts
+  services/analytics.ts 访问统计（可选）：按 .env 的 VITE_UMAMI_* 生成上报脚本标签（vite.config.ts 构建时写进 index.html）
   store/state.ts        界面状态（模式、选择、屏幕、按键高亮）
   store/runner.ts       独占的声音序列（AbortController）
   store/session.ts      模式切换、按键分发、点读 / 拼读逻辑、拼读演示
