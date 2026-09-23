@@ -8,7 +8,7 @@ import { mediaStatus, prefetchMedia, saveData, type MediaProgress } from '@/serv
 
 /** 页面打开后等这么久才开始 */
 export const START_DELAY_MS = 4000
-/** 这一轮没下全（个别文件失败）过这么久再补 */
+/** 这一轮没下全（个别文件失败、服务器一时出错停下了）过这么久再补 */
 export const RETRY_MS = 60_000
 
 export const offline = reactive<{ supported: boolean; running: boolean; progress: MediaProgress | null }>({
@@ -29,7 +29,9 @@ async function run(): Promise<void> {
     offline.running = false
   }
   const p = offline.progress
-  if (p && !p.stopped && p.total > 0 && p.cached < p.total) schedule(RETRY_MS)
+  // 没下全（个别文件失败、或者连续失败停下了——服务器一时忙不过来）又还连着网：过一会儿再补；断网的等 online 事件
+  const complete = !!p && p.total > 0 && p.cached >= p.total
+  if (p && !complete && navigator.onLine !== false) schedule(RETRY_MS)
 }
 
 function schedule(delay: number): void {
