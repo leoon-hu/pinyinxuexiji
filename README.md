@@ -60,7 +60,7 @@ npm run screenshots  # npm run dev 之后：无头 Chrome 模拟 iPhone 截 READ
 
 纯静态站：`npm run build` 后把 `dist/` 整个放到任何支持 HTTPS 的静态托管（nginx、对象存储、Pages 服务都行），不需要服务端。`base: './'`，放在子目录也能跑。
 
-- 已注册 Service Worker（vite-plugin-pwa，`registerType: 'autoUpdate'`）：首次打开会把页面、字体和全部录音（约 17 MB）预缓存，之后断网可用；重新部署后再打开会自动换新版本。
+- 已注册 Service Worker（vite-plugin-pwa，`registerType: 'autoUpdate'`）：首次打开会把页面、字体和全部录音（约 17 MB）预缓存，之后断网可用；重新部署后再打开会自动换新版本。页脚最上面的版本卡片显示当前版本（构建时刻），点「检查更新」会和服务器上的 `version.json`（构建时一起生成）比对，有新版本就下载变了的文件并自动刷新；没更新成功还能「重新安装」（清掉缓存重新下载，学习记录和金币不丢）。
 - 没从主屏幕打开时，页面顶上有一条给家长的「安装 拼音学习机」提示：Android / 电脑 Chrome、Edge 点「安装」直接弹系统安装框；iPad / iPhone 点「怎么做」看步骤（Safari 分享 → **添加到主屏幕**，不在 Safari 里先教换 Safari）；微信 / QQ 里教先在浏览器打开。关掉 3 天后再提示，装好就不再出现；家长设置 → 数据 里也有「安装到主屏幕」入口。桌面图标启动是全屏、离线可用。自己部署时**必须是 HTTPS**（局域网 http 地址不行，Service Worker 不会注册）。
 - 进度、金币、记录都在这台设备的 localStorage 里，换设备用家长区的备份码。
 - 访问统计（可选）：本机 `.env` 里同时写 `VITE_UMAMI_SCRIPT=https://你的统计站/script.js` 与 `VITE_UMAMI_WEBSITE_ID=<站点 id>`，正式构建会往 `index.html` 的 `<head>` 里加一行 [Umami](https://umami.is)（开源、无 cookie）的上报脚本，只记页面、来源、设备与地区，进度与测验记录不上报；两项都不配就什么都不加。逻辑在 `src/services/analytics.ts`（可单测）。
@@ -96,13 +96,14 @@ src/
   services/report.ts    高级测验记录 → 可分享的 PNG（canvas）
   services/share.ts     分享给朋友：按环境选系统分享面板 / 微信菜单提示 / 复制（纯逻辑可单测）；面板状态在 store/share.ts
   services/analytics.ts 访问统计（可选）：按 .env 的 VITE_UMAMI_* 生成上报脚本标签（vite.config.ts 构建时写进 index.html）
+  services/version.ts   当前版本与手动更新：比对 version.json、让 SW 换新版本后重新载入、重新安装、重新载入后报结果（纯逻辑可单测）
   store/state.ts        界面状态（模式、选择、屏幕、按键高亮）
   store/runner.ts       独占的声音序列（AbortController）
   store/session.ts      模式切换、按键分发、点读 / 拼读逻辑、拼读演示
   store/quiz.ts         两种测验：题库（按课过滤、薄弱优先）、判分、纠错
   store/echo.ts         跟读
   store/progress.ts     金币 / 记录 / 高级测验逐题记录 / 礼物 / 家长设置的持久化（key pinyinxuexiji:v1，带迁移）
-  components/           顶栏、显示屏、键盘、声调行、底部三键、礼物 / 家长 / 高级测验记录弹窗
+  components/           顶栏、显示屏、键盘、声调行、底部三键、页脚的版本卡片、礼物 / 家长 / 高级测验记录弹窗
 scripts/build-audio.py  生成音频包
 scripts/screenshots.mjs README 用的预览图 → screenshots/（不进构建产物）
 public/fonts/           Andika（SIL OFL）：ɑ ɡ 单层字形 + 全部声调符号，离线可用

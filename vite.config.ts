@@ -18,12 +18,42 @@ function analyticsTag(env: Record<string, string>): Plugin {
   }
 }
 
+/**
+ * 当前版本（需求 5.7「版本与更新」，services/version.ts）：构建时刻的北京时间「2026-09-23 14:05」（与构建机器的时区无关）。
+ * 页面里是 __APP_VERSION__；同一份写进 dist/version.json 给页脚的「检查更新」比对（不进离线包，见 globIgnores），
+ * dev 服务器也回同一份。
+ */
+function buildVersion(d = new Date()): string {
+  const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+  const p = Object.fromEntries(fmt.formatToParts(d).map((x) => [x.type, x.value]))
+  return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}`
+}
+function versionFile(version: string): Plugin {
+  const body = `${JSON.stringify({ version })}\n`
+  return {
+    name: 'version-file',
+    configureServer(server) {
+      server.middlewares.use('/version.json', (_req, res) => {
+        res.setHeader('Content-Type', 'application/json')
+        res.setHeader('Cache-Control', 'no-store')
+        res.end(body)
+      })
+    },
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: 'version.json', source: body })
+    },
+  }
+}
+const VERSION = buildVersion()
+
 export default defineConfig(({ mode }) => ({
   // 相对路径：构建产物放到任意子目录都能跑；双击 dist/index.html 也能用（音频走 <audio> 元素）
   base: './',
+  define: { __APP_VERSION__: JSON.stringify(VERSION) },
   plugins: [
     vue(),
     analyticsTag(loadEnv(mode, process.cwd(), 'VITE_')),
+    versionFile(VERSION),
     // PWA：iPad「添加到主屏幕」后离线可用。整包（页面 + 字体 + 3700 个录音，约 17 MB）首次打开时预缓存
     VitePWA({
       registerType: 'autoUpdate',
@@ -47,6 +77,8 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,woff2,png,jpg,json,mp3}'],
+        // version.json 是「检查更新」要现取的，不进离线包
+        globIgnores: ['version.json'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallback: 'index.html',
       },

@@ -13,6 +13,7 @@ import ParentModal from '@/components/modals/ParentModal.vue'
 import ChartModal from '@/components/modals/ChartModal.vue'
 import AdvancedLogModal from '@/components/modals/AdvancedLogModal.vue'
 import InstallBanner from '@/components/InstallBanner.vue'
+import AppVersion from '@/components/AppVersion.vue'
 import ContactModal from '@/components/modals/ContactModal.vue'
 import SharePanel from '@/components/modals/SharePanel.vue'
 import { INITIALS, FINALS, WHOLES, TONES, isMedial, MEDIAL_FINALS, type Initial, type Final, type Whole } from '@/data/pinyin'
@@ -216,19 +217,21 @@ onMounted(async () => {
       <ActionBar class="actions" />
     </section>
 
-    <!-- 页脚（需求 5.7）：给家长看的小字，手机上在三键下面、要再往下滚一点——一句「开源」说明 + 三个动作（GitHub 源码 / 分享给朋友 /
-         联系站长）+ 「更多应用」链到同一作者的另外三个站；分享 / 联系站长是按钮，弹面板而不是跳走 -->
+    <!-- 页脚（需求 5.7，排版三个静态站统一）：给家长看的，手机上在三键下面、要再往下滚一点。一条细线隔开，从上到下：版本卡片（当前版本 +
+         检查更新）→ 一句「开源」说明 → 三个动作（GitHub 源码 / 分享给朋友 / 联系站长）→「更多应用」（标题单独一行，手机上一个站一行）；
+         分享 / 联系站长是按钮，弹面板而不是跳走 -->
     <footer class="foot">
+      <AppVersion />
       <p class="open">{{ OPEN_CLAIM }}</p>
       <p class="actions-row">
         <a :href="REPO_URL" target="_blank" rel="noopener">GitHub 源码 ↗</a>
         <button class="share" @click="share()">分享给朋友</button>
         <button class="contact" @click="openPanel('contact')">{{ AUTHOR_CONTACT.label }}</button>
       </p>
-      <p class="sites">
-        <span>更多应用</span>
+      <nav class="sites" aria-label="更多应用">
+        <span class="sites-title">更多应用</span>
         <a v-for="s in SISTER_SITES" :key="s.url" :href="s.url" target="_blank" rel="noopener">{{ s.name }}<small>{{ s.desc }}</small></a>
-      </p>
+      </nav>
     </footer>
 
     <ConfirmDialog
@@ -315,18 +318,26 @@ onMounted(async () => {
   margin-top: 24px;
 }
 
+/* 页脚（三个静态站同一套排版）：粉底上的小字用深一点的灰棕，原来的 --c-muted 灰在粉底上对比度只有 2.3 */
 .foot {
+  --foot-muted: #6e555b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  padding: 20px 6px 8px;
+  border-top: 1px solid rgba(110, 60, 70, 0.14);
   font-size: 13px;
-  color: var(--c-muted);
+  color: var(--foot-muted);
   text-align: center;
 }
 
-/* 开源那一句限宽居中：iPad 横屏 / 电脑上页脚横跨两栏，margin: auto 才不会贴在左栏（别再用 .foot p 之类更高优先级的规则把 margin 压成 0） */
+/* 开源那一句限宽：iPad 横屏 / 电脑上页脚横跨两栏 */
 .foot .open {
   max-width: 560px;
-  margin: 0 auto;
-  padding: 0 6px;
-  line-height: 1.5;
+  margin: 0;
+  line-height: 1.6;
 }
 
 .actions-row,
@@ -335,12 +346,13 @@ onMounted(async () => {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  align-items: center;
-  gap: 0 14px;
+  align-items: baseline;
+  gap: 0 20px;
 }
 
+/* 三个动作和上面那句开源说明是一组，靠近一点 */
 .actions-row {
-  gap: 0 18px;
+  margin-top: -8px;
 }
 
 .foot a,
@@ -363,11 +375,24 @@ onMounted(async () => {
   text-underline-offset: 3px;
 }
 
+/* 更多应用：标题单独一行，站点宽屏排一行、手机上一个站一行 */
+.sites-title {
+  flex-basis: 100%;
+  font-size: 12px;
+}
+
 .sites small {
-  margin-left: 4px;
+  margin-left: 6px;
   font-size: 12px;
   font-weight: 400;
-  color: var(--c-muted);
+  color: var(--foot-muted);
+}
+
+@media (max-width: 600px) {
+  .sites a {
+    flex-basis: 100%;
+    padding: 6px 2px;
+  }
 }
 
 @media (max-width: 560px) {
@@ -377,7 +402,7 @@ onMounted(async () => {
   }
 
   .foot {
-    padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   }
 
   .finals-head {
