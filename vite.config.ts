@@ -1,3 +1,6 @@
+import { createHash } from 'node:crypto'
+import { readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vitest/config'
 import { loadEnv, type Plugin } from 'vite'
@@ -46,6 +49,43 @@ function versionFile(version: string): Plugin {
 }
 const VERSION = buildVersion()
 
+/**
+ * 离线录音包的清单（需求 5.6，services/offline.ts）：public/ 里要离线用的文件 → 内容哈希（md5 前 10 位），
+ * 构建时写成 dist/media.json（不进预缓存，页面在后台照着它把录音下进运行时缓存），dev 服务器也回同一份。
+ */
+function mediaFile(match: RegExp): Plugin {
+  let dir = ''
+  const body = (): string => {
+    const files: Array<[string, string]> = []
+    const walk = (rel: string): void => {
+      for (const e of readdirSync(join(dir, rel), { withFileTypes: true })) {
+        const p = rel ? `${rel}/${e.name}` : e.name
+        if (e.isDirectory()) walk(p)
+        else if (match.test(p)) files.push([p, createHash('md5').update(readFileSync(join(dir, p))).digest('hex').slice(0, 10)])
+      }
+    }
+    walk('')
+    files.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    return `${JSON.stringify({ files: Object.fromEntries(files) })}\n`
+  }
+  return {
+    name: 'media-file',
+    configResolved(c) {
+      dir = c.publicDir
+    },
+    configureServer(server) {
+      server.middlewares.use('/media.json', (_req, res) => {
+        res.setHeader('Content-Type', 'application/json')
+        res.setHeader('Cache-Control', 'no-cache')
+        res.end(body())
+      })
+    },
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: 'media.json', source: body() })
+    },
+  }
+}
+
 export default defineConfig(({ mode }) => ({
   // 相对路径：构建产物放到任意子目录都能跑；双击 dist/index.html 也能用（音频走 <audio> 元素）
   base: './',
@@ -54,7 +94,10 @@ export default defineConfig(({ mode }) => ({
     vue(),
     analyticsTag(loadEnv(mode, process.cwd(), 'VITE_')),
     versionFile(VERSION),
-    // PWA：iPad「添加到主屏幕」后离线可用。整包（页面 + 字体 + 3700 个录音，约 17 MB）首次打开时预缓存
+    mediaFile(/^audio\/[^/]+\.mp3$/),
+    // PWA：iPad「添加到主屏幕」后离线可用。预缓存只有页面外壳（代码 / 字体 / 图标 / 录音清单，几秒装好）——新版本几秒就能换上；
+    // 3700 个录音（约 17 MB）不进预缓存：由页面在后台分批下进运行时缓存 audio（services/offline.ts），SW 离线时从它取。
+    // 以前录音都在预缓存里，SW 要一个一个下完才算装好（几分钟，慢的手机超过 5 分钟就作废），「检查更新」「重新安装」都要排队等它
     VitePWA({
       registerType: 'autoUpdate',
       includeManifestIcons: false,
@@ -76,11 +119,20 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,woff2,png,jpg,json,mp3}'],
-        // version.json 是「检查更新」要现取的，不进离线包
-        globIgnores: ['version.json'],
+        globPatterns: ['**/*.{js,css,html,woff2,png,jpg,json}'],
+        // version.json 是「检查更新」要现取的，media.json 是后台下录音时现取的：都不进离线包
+        globIgnores: ['version.json', 'media.json'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallback: 'index.html',
+        runtimeCaching: [
+          {
+            // 录音：缓存里有就用缓存，没有才取网络并存下（页面后台下载的也在同一个缓存里）。只认不带参数的地址：
+            // 后台下载带 ?v=哈希，要绕过这里直接取网络（改过的录音不能被缓存里的旧文件顶上）
+            urlPattern: /\/audio\/[^/?#]+\.mp3$/,
+            handler: 'CacheFirst',
+            options: { cacheName: 'audio', cacheableResponse: { statuses: [200] } },
+          },
+        ],
       },
     }),
   ],
