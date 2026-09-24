@@ -30,6 +30,6 @@ export const AUTHOR_CONTACT = {
 export const SITE_URL = 'https://pinyin.jiaci.app'
 export const REPO_URL = 'https://github.com/leoon-hu/pinyinxuexiji'
 /** 页脚与家长设置「关于」里的「开源」一句 */
-export const OPEN_CLAIM = '免费、无广告、不用注册、不收集个人信息，录音全部打包在应用里、不联网也能用；代码全部开源（MIT），谁都能查、也能自己部署。'
+export const OPEN_CLAIM = '免费、无广告、不用注册、不收集个人信息，学习记录只存在这台设备上；代码全部开源（MIT），谁都能查、也能自己部署。'
 /** 「分享给朋友」发出去的一句话（后面跟站点链接） */
-export const SHARE_TEXT = '拼音学习机：给学拼音的孩子的点读 / 拼读 / 跟读 / 测验键盘，真人录音、按教材分课。免费、开源、离线、无广告。'
+export const SHARE_TEXT = '拼音学习机：给学拼音的孩子的点读 / 拼读 / 跟读 / 测验键盘，真人录音、按教材分课。免费、开源、无广告。'

@@ -222,7 +222,7 @@ function doReset(): void {
 
     <section v-else>
       <h4 class="sub">安装到主屏幕</h4>
-      <p class="hint">装到主屏幕后从桌面图标打开就是全屏、离线的，孩子自己就能打开。</p>
+      <p class="hint">装到主屏幕后从桌面图标打开就是全屏的，孩子自己就能打开。</p>
       <p v-if="!installKind" class="hint">已安装到主屏幕。</p>
       <button v-else-if="installKind === 'prompt'" class="btn secondary" @click="promptInstall()">安装</button>
       <button v-else class="btn secondary" @click="installSteps = true">查看步骤</button>

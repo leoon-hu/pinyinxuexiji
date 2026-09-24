@@ -2,11 +2,11 @@
 
 一台会说话的拼音键盘：点读、拼读、跟读、测验，适合儿童或学习汉语者进行拼音学习与测验。
 
-在线地址：**<https://pinyin.jiaci.app>**（iPad 上「添加到主屏幕」后可离线使用，见下文）。
+在线地址：**<https://pinyin.jiaci.app>**（iPad 上可以「添加到主屏幕」，像 App 一样全屏打开，见下文）。
 
 - **不用识字也能自己用**：每一步操作、每一句提示都有语音，屏幕上的文字只是给家长 / 老师看的字幕。
 - **发音准**：声母、韵母、音节全部是真人录音，不是合成的；引导语与例字词语用神经语音合成。
-- **纯前端、离线**：没有后端、不用注册，安装到平板后断网也能用；进度、金币、记录都存在设备本地。
+- **纯前端**：没有后端、不用注册，进度、金币、记录都存在设备本地；录音用到才下载，打开快、不占地方。
 - **家长少操心**：出题范围跟着「学到第几课」走，常错的会多考；金币换礼物由家长兑现，家长设置藏在长按齿轮 + 一道加法题后面。
 
 <p align="center">
@@ -60,8 +60,8 @@ npm run screenshots  # npm run dev 之后：无头 Chrome 模拟 iPhone 截 READ
 
 纯静态站：`npm run build` 后把 `dist/` 整个放到任何支持 HTTPS 的静态托管（nginx、对象存储、Pages 服务都行），不需要服务端。`base: './'`，放在子目录也能跑。
 
-- 已注册 Service Worker（vite-plugin-pwa，`registerType: 'autoUpdate'`）：预缓存只有页面外壳（代码、字体、图标、录音清单，几秒装好），3700 个录音（约 17 MB）由页面在后台分批下进另一个缓存（按构建时生成的 `media.json` 里的内容哈希只补缺的、换改过的，断了下次接着下），都下好后断网可用；重新部署后再打开会自动换新版本。页脚最上面的版本卡片显示当前版本（构建时刻）与离线录音包下到哪了，点「检查更新」会和服务器上的 `version.json`（构建时一起生成）比对，有新版本就下载变了的文件并自动刷新；没更新成功还能「重新安装」（清掉缓存重新下载，学习记录和金币不丢）。
-- 没从主屏幕打开时，页面顶上有一条给家长的「安装 拼音学习机」提示：Android / 电脑 Chrome、Edge 点「安装」直接弹系统安装框；iPad / iPhone 点「怎么做」看步骤（Safari 分享 → **添加到主屏幕**，不在 Safari 里先教换 Safari）；微信 / QQ 里教先在浏览器打开。关掉 3 天后再提示，装好就不再出现；家长设置 → 数据 里也有「安装到主屏幕」入口。桌面图标启动是全屏、离线可用。自己部署时**必须是 HTTPS**（局域网 http 地址不行，Service Worker 不会注册）。
+- 已注册 Service Worker（vite-plugin-pwa，`registerType: 'autoUpdate'`）：预缓存只有页面外壳（代码、字体、图标、录音清单，几秒装好）；3700 个录音（约 17 MB）不预先下载，打开页面时只取键盘上的核心按键，其余点到哪个取哪个，取过的存进另一个缓存（先用缓存、后台再取一次更新，录音重做过几天内就换上）。不保证断网可用：用过的录音多半还能播，没用过的退回浏览器朗读。重新部署后再打开会自动换新版本。页脚最上面的版本卡片显示当前版本（构建时刻），点「检查更新」会和服务器上的 `version.json`（构建时一起生成）比对，有新版本就下载变了的文件并自动刷新；没更新成功还能「重新安装」（清掉缓存重新下载，学习记录和金币不丢）。
+- 没从主屏幕打开时，页面顶上有一条给家长的「安装 拼音学习机」提示：Android / 电脑 Chrome、Edge 点「安装」直接弹系统安装框；iPad / iPhone 点「怎么做」看步骤（Safari 分享 → **添加到主屏幕**，不在 Safari 里先教换 Safari）；微信 / QQ 里教先在浏览器打开。关掉 3 天后再提示，装好就不再出现；家长设置 → 数据 里也有「安装到主屏幕」入口。桌面图标启动是全屏的。自己部署时**必须是 HTTPS**（局域网 http 地址不行，Service Worker 不会注册）。
 - 进度、金币、记录都在这台设备的 localStorage 里，换设备用家长区的备份码。
 - 访问统计（可选）：本机 `.env` 里同时写 `VITE_UMAMI_SCRIPT=https://你的统计站/script.js` 与 `VITE_UMAMI_WEBSITE_ID=<站点 id>`，正式构建会往 `index.html` 的 `<head>` 里加一行 [Umami](https://umami.is)（开源、无 cookie）的上报脚本，只记页面、来源、设备与地区，进度与测验记录不上报；两项都不配就什么都不加。逻辑在 `src/services/analytics.ts`（可单测）。
 
@@ -71,7 +71,7 @@ npm run screenshots  # npm run dev 之后：无头 Chrome 模拟 iPhone 截 READ
 
 - [AI加词](https://jiaci.app)：背单词，FSRS 间隔重复、AI 填充的词条资料、真人级发音。
 - [同步练-对战版](https://tongbulian.jiaci.app)：把人教版课本的知识点测验变成游戏积分，谁先答对 8 题谁赢——打机器人、两人一台或多设备扫码组队；也能一个人安静地练，汉字注音、题目朗读。
-- [识字卡片](https://kapian.jiaci.app)：2–4 岁看图听音认知卡片，中英文、离线。
+- [识字卡片](https://kapian.jiaci.app)：2–4 岁看图听音认知卡片，中英文。
 
 ## 联系作者
 
@@ -96,7 +96,6 @@ src/
   services/report.ts    高级测验记录 → 可分享的 PNG（canvas）
   services/share.ts     分享给朋友：按环境选系统分享面板 / 微信菜单提示 / 复制（纯逻辑可单测）；面板状态在 store/share.ts
   services/analytics.ts 访问统计（可选）：按 .env 的 VITE_UMAMI_* 生成上报脚本标签（vite.config.ts 构建时写进 index.html）
-  services/offline.ts   离线录音包：照 media.json 在后台把录音下进缓存（只补缺 / 换改过的、可断点续传、下完清旧），状态在 store/offline.ts
   services/version.ts   当前版本与手动更新：比对 version.json、让 SW 换新版本后重新载入、重新安装、重新载入后报结果（纯逻辑可单测）
   store/state.ts        界面状态（模式、选择、屏幕、按键高亮）
   store/runner.ts       独占的声音序列（AbortController）
@@ -107,5 +106,5 @@ src/
   components/           顶栏、显示屏、键盘、声调行、底部三键、页脚的版本卡片、礼物 / 家长 / 高级测验记录弹窗
 scripts/build-audio.py  生成音频包
 scripts/screenshots.mjs README 用的预览图 → screenshots/（不进构建产物）
-public/fonts/           Andika（SIL OFL）：ɑ ɡ 单层字形 + 全部声调符号，离线可用
+public/fonts/           Andika（SIL OFL）：ɑ ɡ 单层字形 + 全部声调符号，自托管
 ```

@@ -14,7 +14,7 @@ const steps = computed(() => installSteps(props.kind, { iosSafari: isIOSSafari, 
 
 <template>
   <AppModal title="添加到主屏幕" @close="emit('close')">
-    <p class="desc">全屏打开，没有网也能用。</p>
+    <p class="desc">像 App 一样全屏打开，不用再找网址。</p>
     <ol class="steps">
       <li v-for="(s, i) in steps" :key="s.text" class="step">
         <span class="n">{{ i + 1 }}</span>

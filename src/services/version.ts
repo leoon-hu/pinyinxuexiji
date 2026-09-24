@@ -4,7 +4,7 @@
  * - 「检查更新」：不走任何缓存取一次 version.json，与本页的版本比，不一样就是有新版本；
  * - 更新：让 Service Worker 去取新版本（装好就让它接管），接管后重新载入页面；没有 SW 就直接重新载入（页面本来就走网络）；
  * - 重新载入之前把「要更新到哪个版本」记进 sessionStorage，载入后比对：到了说「已更新」，没到说「更新没有完成」并给「重新安装」；
- * - 「重新安装」：注销 SW、删掉全部缓存（录音离线包）、重新载入——从服务器拿一份全新的（学习记录、金币在 localStorage，不动）。
+ * - 「重新安装」：注销 SW、删掉全部缓存（页面外壳与用过的录音）、重新载入——从服务器拿一份全新的（学习记录、金币在 localStorage，不动）。
  * 纯逻辑，浏览器对象都可注入，有单测。
  */
 
@@ -19,7 +19,7 @@ export const UPDATE_CHECK_MS = 15_000
 export const UPDATE_SLOW_MS = 60_000
 /**
  * 「重新安装」时注销最多等这么久：注销排在正在进行的 SW 安装后面（浏览器按顺序处理同一个作用域的注册任务），
- * 离线包大的时候一次安装要几分钟——不等它，发出去就接着删缓存、重新载入（页面从网络取，注销随后生效）
+ * 碰上慢的安装就要一直等——不等它，发出去就接着删缓存、重新载入（页面从网络取，注销随后生效）
  */
 export const UNREGISTER_WAIT_MS = 3000
 /** sessionStorage：刚才要更新到哪个版本（重新载入后比对用） */
@@ -161,7 +161,7 @@ function defaultReinstallDeps(): ReinstallDeps {
 }
 
 /**
- * 「重新安装」：注销本站全部 SW（最多等 UNREGISTER_WAIT_MS）、删掉全部缓存（页面与录音的离线包），然后重新载入。给「怎么都还是旧版」兜底；
+ * 「重新安装」：注销本站全部 SW（最多等 UNREGISTER_WAIT_MS）、删掉全部缓存（页面外壳与用过的录音），然后重新载入。给「怎么都还是旧版」兜底；
  * 学习记录在 localStorage，不动。哪一步出错都照样重新载入。
  */
 export async function reinstall(deps: ReinstallDeps = defaultReinstallDeps()): Promise<void> {

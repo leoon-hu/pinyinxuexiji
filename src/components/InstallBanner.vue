@@ -28,7 +28,7 @@ async function primary(): Promise<void> {
     <img class="icon" :src="iconSrc" alt="" draggable="false" />
     <div class="text">
       <strong class="title">安装 拼音学习机</strong>
-      <span class="desc">全屏打开，没有网也能用</span>
+      <span class="desc">像 App 一样全屏打开，不用再找网址</span>
     </div>
     <button class="btn primary" @click="primary">{{ installWay === 'prompt' ? '安装' : '怎么做' }}</button>
     <button class="close" aria-label="关闭安装提示" @click="dismiss">×</button>

@@ -1,11 +1,10 @@
 <script setup lang="ts">
 // 页脚最上面的「版本与更新」卡片（需求 5.7，child-education 三个静态站统一）：应用图标 + 当前版本 + 「检查更新」。
 // 有新版本就让 Service Worker 取新的、装好接管后自动重新载入；重新载入后卡片滚到眼前，说「已更新」或「更新没有完成」。
-// 检查过、慢、失败时给「重新安装」（先确认连得上服务器，再清掉缓存重新下载）。最下面一行是离线录音包下到哪了（5.6）。
+// 检查过、慢、失败时给「重新安装」（先确认连得上服务器，再清掉缓存重新下载）。
 // 给家长看的，不出声。逻辑在 services/version.ts。
 import { computed, onMounted, ref } from 'vue'
 import { APP_VERSION, applyUpdate, checkVersion, noteUpdate, reinstall, takeUpdateNote } from '@/services/version'
-import { offline } from '@/store/offline'
 
 type State =
   | 'idle'
@@ -63,7 +62,7 @@ async function check(): Promise<void> {
   state.value = (await applyUpdate()) === 'slow' ? 'slow' : 'installFailed'
 }
 
-/** 重新安装前先确认连得上服务器：没网时清掉离线包，重新载入就打不开了 */
+/** 重新安装前先确认连得上服务器：没网时清掉缓存里的页面外壳，重新载入就打不开了 */
 async function redo(): Promise<void> {
   if (busy.value) return
   state.value = 'reinstalling'
@@ -87,14 +86,6 @@ onMounted(() => {
   else window.addEventListener('load', show, { once: true })
 })
 
-/** 离线录音包（services/offline.ts）：后台下到哪了 */
-const offlineLine = computed(() => {
-  if (!offline.supported) return '这个打开方式存不了离线录音，只能联网用'
-  const p = offline.progress
-  if (!p || p.total === 0) return p?.stopped ? '离线录音包：联网后会在后台自动下载' : '离线录音包：打开页面后会在后台自动下载'
-  if (p.cached >= p.total) return '离线录音包：已备齐，没有网也能用'
-  return `离线录音包：已下载 ${p.cached} / ${p.total}${p.stopped ? '，联网后会接着下' : ''}`
-})
 </script>
 
 <template>
@@ -111,7 +102,6 @@ const offlineLine = computed(() => {
     </div>
     <p class="ver-status" :class="tone" role="status">{{ message }}</p>
     <p v-if="canReinstall" class="ver-more">还是旧版？<button type="button" class="ver-redo" @click="redo">重新安装</button>（清掉本机缓存重新下载，学习记录和金币不会丢）</p>
-    <p class="ver-offline">{{ offlineLine }}</p>
   </section>
 </template>
 
@@ -210,14 +200,6 @@ const offlineLine = computed(() => {
 }
 .ver-more {
   margin: 2px 0 0;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--c-muted);
-}
-.ver-offline {
-  margin: 10px 0 0;
-  padding-top: 8px;
-  border-top: 1px dashed var(--c-line);
   font-size: 13px;
   line-height: 1.5;
   color: var(--c-muted);
