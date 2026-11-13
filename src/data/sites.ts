@@ -18,12 +18,17 @@ export const SISTER_SITES: readonly SisterSite[] = [
 /**
  * 站长联系方式（需求 5.7，2026-09-21 四个站统一）：一张微信二维码，页脚与家长设置「关于」里点「联系站长」弹出来看。
  * 图片在 public/，四个站各放一份同一张图。
+ * 旁边并排一张微信支付的赞助码（2026-11-13 四个站统一），两张图下各一行小字说明。
  */
 export const AUTHOR_CONTACT = {
   label: '联系站长',
   /** public/ 里的文件名；base 是 './'，用的时候拼 BASE_URL */
   qr: 'wechat-qrcode.jpg',
+  qrCaption: '加站长微信',
   hint: '用微信扫一扫（手机上长按二维码识别）加站长微信，有问题、建议或想要的功能都欢迎直接说。',
+  /** 微信支付的赞助码，同样在 public/ */
+  pay: 'wechat-pay.jpg',
+  payCaption: '支持赞助站长，继续优化本应用体验。',
 } as const
 
 /** 本站的公开地址与源码仓库（需求 5.7「开源与分享」）：页脚「GitHub 源码」、分享出去的链接兜底（file:// 打开时）都用它 */
